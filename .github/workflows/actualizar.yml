@@ -1,0 +1,35 @@
+name: Actualizacion Diaria SIGO PAE
+on:
+  schedule:
+    - cron: '0 13 * * *' # Corre todos los días a la 1:00 PM UTC (8:00 AM hora Perú)
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: windows-latest
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: |
+          pip install pandas openpyxl playwright
+          playwright install chromium
+
+      - name: Ejecutar robot extractor SIGO
+        env:
+          CLAVE_SIGO: ${{ secrets.CLAVE_SIGO }}
+        run: python automatizador_sigo_pae_junin.py
+
+      - name: Subir cambios actualizados a la web
+        run: |
+          git config --global user.name "Bot PAE Junin"
+          git config --global user.email "bot@paejunin.pe"
+          git add index.html
+          git commit -m "Actualizacion automatica diaria desde SIGO" || exit 0
+          git push
