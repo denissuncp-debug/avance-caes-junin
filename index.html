@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Interactivo CAEs y Avance por Monitor - UT Junín 2027</title>
+  <style>
+    :root {
+      --navy: #0F172A;
+      --blue: #2563EB;
+      --teal: #0D9488;
+      --amber: #D97706;
+      --purple: #7C3AED;
+      --pink: #DB2777;
+      --red: #DC2626;
+      --green: #16A34A;
+      --bg: #F1F5F9;
+      --card: #FFFFFF;
+      --text: #1E293B;
+      --muted: #64748B;
+      --border: #E2E8F0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 18px 24px;
+    }
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%);
+      color: white;
+      padding: 20px 28px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(15, 23, 42, 0.15);
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .header h1 { margin: 0; font-size: 21px; letter-spacing: 0.3px; }
+    .header p { margin: 6px 0 0; color: #93C5FD; font-size: 13px; }
+    .header-badges { display: flex; gap: 10px; flex-wrap: wrap; }
+    .h-badge {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* FILTERS BAR */
+    .filters-bar {
+      background: var(--card);
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      border: 1px solid var(--border);
+      align-items: end;
+    }
+    .f-group { display: flex; flex-direction: column; gap: 5px; }
+    .f-group label { font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; }
+    .f-group select, .f-group input {
+      padding: 9px 11px;
+      border: 1px solid #CBD5E1;
+      border-radius: 7px;
+      font-size: 13px;
+      background: #F8FAFC;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .f-group select:focus, .f-group input:focus {
+      border-color: var(--blue);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+    .f-highlight select {
+      border: 2px solid var(--amber);
+      background: #FFFBEB;
+      font-weight: 700;
+    }
+    .btn-reset {
+      background: #EF4444;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 7px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+      height: 37px;
+    }
+    .btn-reset:hover { background: #DC2626; }
+
+    /* KPI CARDS */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .kpi {
+      background: var(--card);
+      padding: 16px 18px;
+      border-radius: 12px;
+      border-left: 5px solid var(--blue);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .kpi .val { font-size: 26px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+    .kpi .lbl { font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 6px; text-transform: uppercase; }
+    .kpi .sub { font-size: 11.5px; color: #0F172A; margin-top: 4px; font-weight: 600; background: #F1F5F9; display: inline-block; padding: 2px 7px; border-radius: 5px; width: fit-content; }
+
+    /* CHARTS GRID */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 1100px) {
+      .charts-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 750px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card);
+      padding: 18px 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      border: 1px solid var(--border);
+    }
+    .card h3 {
+      margin: 0 0 14px;
+      font-size: 14.5px;
+      color: var(--navy);
+      border-bottom: 2px solid #F1F5F9;
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card h3 span { font-size: 11px; color: var(--muted); font-weight: normal; }
+
+    /* BAR CHARTS HTML/CSS */
+    .bar-list { display: flex; flex-direction: column; gap: 10px; }
+    .bar-item { display: flex; flex-direction: column; gap: 3px; }
+    .bar-head { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; }
+    .bar-track { width: 100%; height: 14px; background: #F1F5F9; border-radius: 7px; overflow: hidden; display: flex; }
+    .bar-fill { height: 100%; border-radius: 7px; transition: width 0.4s ease; }
+
+    /* DONUT / SPLIT CHART */
+    .split-stat { display: flex; gap: 14px; align-items: center; margin-top: 10px; }
+    .pill-stat { flex: 1; background: #F8FAFC; border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+    .pill-stat .p-val { font-size: 20px; font-weight: 800; }
+    .pill-stat .p-lbl { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
+    /* TABS FOR TABLES */
+    .tabs { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--navy);
+      color: white;
+      border-color: var(--navy);
+    }
+
+    /* TABLES */
+    .table-container { overflow-x: auto; max-height: 500px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #1E3A8A;
+      color: white;
+      padding: 11px 12px;
+      text-align: left;
+      font-weight: 700;
+      white-space: nowrap;
+      z-index: 2;
+    }
+    tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+    tbody tr:hover { background: #EFF6FF; }
+    .badge { padding: 3px 9px; border-radius: 12px; font-weight: 700; font-size: 11px; display: inline-block; }
+    .b-si { background: #DCFCE7; color: #166534; }
+    .b-no { background: #FEE2E2; color: #991B1B; }
+    .b-warn { background: #FEF3C7; color: #92400E; }
+    .b-info { background: #DBEAFE; color: #1E40AF; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>DASHBOARD INTERACTIVO: SISTEMA DE GESTIÓN DE CAEs Y AVANCE POR MONITOR (UT JUNÍN)</h1>
+      <p>Campaña: Periodo 2027 | Corte: 18/10/2026 | Padrón General (3,846 II.EE.) y Gestión de Integrantes (152 Registros)</p>
+    </div>
+    <div class="header-badges">
+      <div class="h-badge">Modalidad: 100% Comida Caliente</div>
+      <div class="h-badge">Monitores con Avance: 3</div>
+      <div class="h-badge">100% Autónomo / Sin Internet</div>
+    </div>
+  </div>
+
+  <!-- BARRA DE FILTROS (SIN QUINTIL NI INDÍGENA, CON FILTRO DE MONITOR RESPONSABLE) -->
+  <div class="filters-bar">
+    <div class="f-group f-highlight">
+      <label>1. Monitor Responsable (Avance)</label>
+      <select id="fMonitor" onchange="onMonitorChange()">
+        <option value="TODOS">Todos los Monitores (Padrón General)</option>
+      </select>
+    </div>
+    <div class="f-group">
+      <label>2. Provincia</label>
+      <select id="fProv" onchange="onProvChange()">
+        <option value="TODAS">Todas las Provincias (9)</option>
+      </select>
+    </div>
+    <div class="f-group">
+      <label>3. Ítem Territorial</label>
+      <select id="fItem" onchange="renderAll()">
+        <option value="TODOS">Todos los Ítems (26)</option>
+      </select>
+    </div>
+    <div class="f-group">
+      <label>4. Nivel Educativo</label>
+      <select id="fNivel" onchange="renderAll()">
+        <option value="TODOS">Todos los Niveles</option>
+        <option value="INICIAL">INICIAL</option>
+        <option value="PRIMARIA">PRIMARIA</option>
+        <option value="SECUNDARIA">SECUNDARIA</option>
+      </select>
+    </div>
+    <div class="f-group">
+      <label>5. Estado de Acta (CAEs)</label>
+      <select id="fActa" onchange="renderAll()">
+        <option value="TODOS">Todos (Con y Sin Acta)</option>
+        <option value="SI">Con Acta Suscrita (SI)</option>
+        <option value="NO">Sin Acta / Alerta (NO)</option>
+      </select>
+    </div>
+    <div class="f-group">
+      <label>6. Buscar II.EE. / Cód. / DNI</label>
+      <input type="text" id="fSearch" placeholder="Ej. 30874, Perené, DNI..." oninput="renderAll()">
+    </div>
+    <button class="btn-reset" onclick="resetFilters()">Limpiar Filtros</button>
+  </div>
+
+  <!-- TARJETAS KPI -->
+  <div class="kpis">
+    <div class="kpi" style="border-color: #2563EB;">
+      <div class="val" id="kIIEE">3,846</div>
+      <div class="lbl" id="kIIEELbl">Total II.EE. Padrón</div>
+      <div class="sub" id="kIIEESub">100.0% del total UT Junín</div>
+    </div>
+    <div class="kpi" style="border-color: #0D9488;">
+      <div class="val" id="kUsr">187,701</div>
+      <div class="lbl">Usuarios PAE Atendidos</div>
+      <div class="sub" id="kUsrSub">Prom: 48.8 usuarios / II.EE.</div>
+    </div>
+    <div class="kpi" style="border-color: #D97706;">
+      <div class="val" id="kConf">39</div>
+      <div class="lbl">CAEs Conformados (Avance)</div>
+      <div class="sub" id="kConfSub">Avance: 1.01% sobre padrón</div>
+    </div>
+    <div class="kpi" style="border-color: #16A34A;">
+      <div class="val" id="kActa">33</div>
+      <div class="lbl">CAEs con Acta (SI)</div>
+      <div class="sub" id="kActaSub">84.6% de los CAEs conformados</div>
+    </div>
+    <div class="kpi" style="border-color: #DC2626;">
+      <div class="val" id="kSinActa">6</div>
+      <div class="lbl">CAEs sin Acta (Alerta NO)</div>
+      <div class="sub" id="kSinActaSub">Pendientes de validar acta</div>
+    </div>
+    <div class="kpi" style="border-color: #7C3AED;">
+      <div class="val" id="kInt">152</div>
+      <div class="lbl">Integrantes Registrados</div>
+      <div class="sub" id="kIntSub">15 CAEs completos (5 int.)</div>
+    </div>
+  </div>
+
+  <!-- FILA DE GRÁFICOS INTERACTIVOS -->
+  <div class="charts-grid">
+    <div class="card">
+      <h3>1. Avance por Monitor Responsable <span>(CAEs, Actas e Integrantes)</span></h3>
+      <div class="bar-list" id="chMonitor"></div>
+      <hr style="border:0; border-top:1px solid #E2E8F0; margin: 14px 0;">
+      <h3>2. % Avance por Distrito / Ítem Intervenido <span>(Meta Local)</span></h3>
+      <div class="bar-list" id="chDistMon"></div>
+    </div>
+
+    <div class="card">
+      <h3>3. II.EE. y Usuarios por Provincia <span>(Padrón Filtrado)</span></h3>
+      <div class="bar-list" id="chProv"></div>
+      <hr style="border:0; border-top:1px solid #E2E8F0; margin: 14px 0;">
+      <h3>4. Participación por Nivel Educativo <span>(II.EE. vs Usuarios)</span></h3>
+      <div class="bar-list" id="chNivel"></div>
+    </div>
+
+    <div class="card">
+      <h3>5. Estado de Actas y Completitud CAE <span>(CAEs Filtrados)</span></h3>
+      <div class="bar-list" id="chAvance"></div>
+      <hr style="border:0; border-top:1px solid #E2E8F0; margin: 14px 0;">
+      <h3>6. Perfil de Integrantes Registrados <span>(Género y Rol CAE)</span></h3>
+      <div class="split-stat" id="chSexo"></div>
+      <div class="bar-list" id="chRol" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN DE TABLAS INTERACTIVAS CON PESTAÑAS -->
+  <div class="card">
+    <div class="tabs">
+      <button class="tab-btn active" id="btnTab1" onclick="switchTab(1)">Tabla 1: Avance Detallado por Monitor Responsable (<span id="cntT1">3</span>)</button>
+      <button class="tab-btn" id="btnTab2" onclick="switchTab(2)">Tabla 2: 39 CAEs Conformados y Estado de Acta (<span id="cntT2">39</span>)</button>
+      <button class="tab-btn" id="btnTab3" onclick="switchTab(3)">Tabla 3: Padrón Resumen por Provincia (<span id="cntT3">9</span>)</button>
+      <button class="tab-btn" id="btnTab4" onclick="switchTab(4)">Tabla 4: Directorio de 152 Integrantes CAE (<span id="cntT4">152</span>)</button>
+    </div>
+
+    <!-- TABLA 1: RESUMEN DE AVANCE POR MONITOR -->
+    <div id="tab1" class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Monitor Responsable</th>
+            <th>Usuario Sistema</th>
+            <th>Provincia</th>
+            <th>Ítems Intervenidos</th>
+            <th>Distritos con Avance</th>
+            <th>Total II.EE. (En sus Ítems)</th>
+            <th>CAEs Conformados</th>
+            <th>% Avance (Sobre sus Ítems)</th>
+            <th>Con Acta (SI)</th>
+            <th>Sin Acta (Alerta NO)</th>
+            <th>CAEs Completos (5 Int.)</th>
+            <th>CAEs Incompletos (1-4 Int.)</th>
+            <th>Total Integrantes Reg.</th>
+            <th>Usuarios en CAEs Conf.</th>
+          </tr>
+        </thead>
+        <tbody id="tbMon"></tbody>
+      </table>
+    </div>
+
+    <!-- TABLA 2: 39 CAES CONFORMADOS (SIN QUINTIL NI INDÍGENA) -->
+    <div id="tab2" class="table-container" style="display:none;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cód. Modular</th>
+            <th>Provincia</th>
+            <th>Distrito</th>
+            <th>Ítem</th>
+            <th>Centro Poblado</th>
+            <th>Nombre de II.EE.</th>
+            <th>Nivel Educativo</th>
+            <th>Usuarios</th>
+            <th>Integrantes</th>
+            <th>Estado Acta</th>
+            <th>Fecha Acta</th>
+            <th>Monitor Responsable</th>
+          </tr>
+        </thead>
+        <tbody id="tbCaes"></tbody>
+      </table>
+    </div>
+
+    <!-- TABLA 3: RESUMEN PROVINCIAL (SIN INDÍGENA) -->
+    <div id="tab3" class="table-container" style="display:none;">
+      <table>
+        <thead>
+          <tr>
+            <th>Provincia</th>
+            <th>Total II.EE.</th>
+            <th>% II.EE.</th>
+            <th>Total Usuarios</th>
+            <th>Prom. Usuarios/II.EE.</th>
+            <th>CAEs Conformados</th>
+            <th>Con Acta (SI)</th>
+            <th>Sin Acta (Alerta)</th>
+            <th>Total Integrantes</th>
+            <th>% Avance Conformación</th>
+          </tr>
+        </thead>
+        <tbody id="tbProv"></tbody>
+      </table>
+    </div>
+
+    <!-- TABLA 4: 152 INTEGRANTES -->
+    <div id="tab4" class="table-container" style="display:none;">
+      <table>
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Cód. Modular</th>
+            <th>Provincia</th>
+            <th>Distrito</th>
+            <th>Nombre Colegio</th>
+            <th>Nivel</th>
+            <th>DNI</th>
+            <th>Apellidos y Nombres</th>
+            <th>Rol en el CAE</th>
+            <th>Cargo en la II.EE.</th>
+            <th>Sexo</th>
+            <th>Edad</th>
+            <th>Lengua</th>
+            <th>Celular</th>
+            <th>Monitor Registrador</th>
+          </tr>
+        </thead>
+        <tbody id="tbInt"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+const PADRON = [{"p": "CHANCHAMAYO", "d": "CHANCHAMAYO", "it": "CHANCHAMAYO", "n": "INICIAL", "iiee": 18, "usr": 825, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "CHANCHAMAYO", "it": "CHANCHAMAYO", "n": "PRIMARIA", "iiee": 39, "usr": 2422, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "CHANCHAMAYO", "it": "CHANCHAMAYO", "n": "SECUNDARIA", "iiee": 6, "usr": 1801, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "PERENE", "it": "CHANCHAMAYO", "n": "INICIAL", "iiee": 13, "usr": 485, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "PERENE", "it": "CHANCHAMAYO", "n": "PRIMARIA", "iiee": 14, "usr": 1134, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "PERENE", "it": "CHANCHAMAYO", "n": "SECUNDARIA", "iiee": 2, "usr": 872, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "n": "INICIAL", "iiee": 109, "usr": 2595, "conf": 12, "acta": 8, "int": 46}, {"p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "n": "PRIMARIA", "iiee": 137, "usr": 5610, "conf": 18, "acta": 17, "int": 68}, {"p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "n": "SECUNDARIA", "iiee": 17, "usr": 1614, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "PERENE", "it": "SAN RAMON", "n": "INICIAL", "iiee": 2, "usr": 24, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PERENE", "n": "INICIAL", "iiee": 1, "usr": 5, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PERENE", "n": "PRIMARIA", "iiee": 2, "usr": 26, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "n": "INICIAL", "iiee": 94, "usr": 2449, "conf": 1, "acta": 1, "int": 4}, {"p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "n": "PRIMARIA", "iiee": 108, "usr": 4857, "conf": 1, "acta": 0, "int": 1}, {"p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "n": "SECUNDARIA", "iiee": 20, "usr": 3066, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "n": "INICIAL", "iiee": 17, "usr": 218, "conf": 1, "acta": 1, "int": 5}, {"p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "n": "PRIMARIA", "iiee": 26, "usr": 601, "conf": 1, "acta": 1, "int": 5}, {"p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "n": "SECUNDARIA", "iiee": 2, "usr": 145, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "SAN RAMON", "it": "SAN RAMON", "n": "INICIAL", "iiee": 30, "usr": 1000, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "SAN RAMON", "it": "SAN RAMON", "n": "PRIMARIA", "iiee": 29, "usr": 2547, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "SAN RAMON", "it": "SAN RAMON", "n": "SECUNDARIA", "iiee": 2, "usr": 609, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "VITOC", "it": "SAN RAMON", "n": "INICIAL", "iiee": 5, "usr": 49, "conf": 0, "acta": 0, "int": 0}, {"p": "CHANCHAMAYO", "d": "VITOC", "it": "SAN RAMON", "n": "PRIMARIA", "iiee": 9, "usr": 142, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "AHUAC", "it": "CHUPACA", "n": "INICIAL", "iiee": 8, "usr": 240, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "AHUAC", "it": "CHUPACA", "n": "PRIMARIA", "iiee": 7, "usr": 445, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "AHUAC", "it": "CHUPACA", "n": "SECUNDARIA", "iiee": 1, "usr": 362, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "AHUAC", "it": "SAN JOSE DE QUERO", "n": "INICIAL", "iiee": 3, "usr": 46, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "AHUAC", "it": "SAN JOSE DE QUERO", "n": "PRIMARIA", "iiee": 4, "usr": 110, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "CHONGOS BAJO", "it": "CHUPACA", "n": "INICIAL", "iiee": 5, "usr": 156, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "CHONGOS BAJO", "it": "CHUPACA", "n": "PRIMARIA", "iiee": 4, "usr": 342, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "CHONGOS BAJO", "it": "CHUPACA", "n": "SECUNDARIA", "iiee": 1, "usr": 242, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "CHUPACA", "it": "CHUPACA", "n": "INICIAL", "iiee": 22, "usr": 1044, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "CHUPACA", "it": "CHUPACA", "n": "PRIMARIA", "iiee": 14, "usr": 2849, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "CHUPACA", "it": "CHUPACA", "n": "SECUNDARIA", "iiee": 1, "usr": 216, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "HUACHAC", "it": "SAN JOSE DE QUERO", "n": "INICIAL", "iiee": 3, "usr": 78, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "HUACHAC", "it": "SAN JOSE DE QUERO", "n": "PRIMARIA", "iiee": 4, "usr": 217, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "HUAMANCACA CHICO", "it": "CHUPACA", "n": "INICIAL", "iiee": 5, "usr": 399, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "HUAMANCACA CHICO", "it": "CHUPACA", "n": "PRIMARIA", "iiee": 3, "usr": 698, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "HUAMANCACA CHICO", "it": "CHUPACA", "n": "SECUNDARIA", "iiee": 1, "usr": 248, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "SAN JUAN DE ISCOS", "it": "CHUPACA", "n": "INICIAL", "iiee": 6, "usr": 74, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "SAN JUAN DE ISCOS", "it": "CHUPACA", "n": "PRIMARIA", "iiee": 4, "usr": 178, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "SAN JUAN DE JARPA", "it": "SAN JOSE DE QUERO", "n": "INICIAL", "iiee": 8, "usr": 73, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "SAN JUAN DE JARPA", "it": "SAN JOSE DE QUERO", "n": "PRIMARIA", "iiee": 7, "usr": 206, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "TRES DE DICIEMBRE", "it": "CHUPACA", "n": "INICIAL", "iiee": 4, "usr": 156, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "TRES DE DICIEMBRE", "it": "CHUPACA", "n": "PRIMARIA", "iiee": 2, "usr": 303, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "YANACANCHA", "it": "SAN JOSE DE QUERO", "n": "INICIAL", "iiee": 8, "usr": 118, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "YANACANCHA", "it": "SAN JOSE DE QUERO", "n": "PRIMARIA", "iiee": 7, "usr": 262, "conf": 0, "acta": 0, "int": 0}, {"p": "CHUPACA", "d": "YANACANCHA", "it": "SAN JOSE DE QUERO", "n": "SECUNDARIA", "iiee": 1, "usr": 120, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "ACO", "it": "SAN JOSE DE QUERO", "n": "INICIAL", "iiee": 3, "usr": 77, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "ACO", "it": "SAN JOSE DE QUERO", "n": "PRIMARIA", "iiee": 4, "usr": 161, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "ACO", "it": "SAN JOSE DE QUERO", "n": "SECUNDARIA", "iiee": 1, "usr": 99, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "ANDAMARCA", "it": "ANDAMARCA", "n": "INICIAL", "iiee": 25, "usr": 203, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "ANDAMARCA", "it": "ANDAMARCA", "n": "PRIMARIA", "iiee": 37, "usr": 568, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "ANDAMARCA", "it": "ANDAMARCA", "n": "SECUNDARIA", "iiee": 1, "usr": 117, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "CHAMBARA", "it": "SAN JOSE DE QUERO", "n": "INICIAL", "iiee": 8, "usr": 110, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "CHAMBARA", "it": "SAN JOSE DE QUERO", "n": "PRIMARIA", "iiee": 8, "usr": 255, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "CHAMBARA", "it": "SAN JOSE DE QUERO", "n": "SECUNDARIA", "iiee": 2, "usr": 150, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "COCHAS", "it": "ANDAMARCA", "n": "INICIAL", "iiee": 6, "usr": 87, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "COCHAS", "it": "ANDAMARCA", "n": "PRIMARIA", "iiee": 9, "usr": 210, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "COMAS", "it": "ANDAMARCA", "n": "INICIAL", "iiee": 24, "usr": 196, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "COMAS", "it": "ANDAMARCA", "n": "PRIMARIA", "iiee": 34, "usr": 507, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "COMAS", "it": "ANDAMARCA", "n": "SECUNDARIA", "iiee": 1, "usr": 124, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "CONCEPCION", "it": "CONCEPCION", "n": "INICIAL", "iiee": 14, "usr": 771, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "CONCEPCION", "it": "CONCEPCION", "n": "PRIMARIA", "iiee": 10, "usr": 2091, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "CONCEPCION", "it": "CONCEPCION", "n": "SECUNDARIA", "iiee": 1, "usr": 404, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "HEROINAS TOLEDO", "it": "CONCEPCION", "n": "INICIAL", "iiee": 5, "usr": 41, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "HEROINAS TOLEDO", "it": "CONCEPCION", "n": "PRIMARIA", "iiee": 4, "usr": 81, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "MANZANARES", "it": "SAN JOSE DE QUERO", "n": "INICIAL", "iiee": 3, "usr": 93, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "MANZANARES", "it": "SAN JOSE DE QUERO", "n": "PRIMARIA", "iiee": 3, "usr": 149, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "MANZANARES", "it": "SAN JOSE DE QUERO", "n": "SECUNDARIA", "iiee": 1, "usr": 141, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "MARISCAL CASTILLA", "it": "ANDAMARCA", "n": "INICIAL", "iiee": 10, "usr": 93, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "MARISCAL CASTILLA", "it": "ANDAMARCA", "n": "PRIMARIA", "iiee": 11, "usr": 181, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "MATAHUASI", "it": "CONCEPCION", "n": "INICIAL", "iiee": 9, "usr": 251, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "MATAHUASI", "it": "CONCEPCION", "n": "PRIMARIA", "iiee": 5, "usr": 409, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "MITO", "it": "CONCEPCION", "n": "INICIAL", "iiee": 3, "usr": 49, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "MITO", "it": "CONCEPCION", "n": "PRIMARIA", "iiee": 3, "usr": 65, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "NUEVE DE JULIO", "it": "CONCEPCION", "n": "INICIAL", "iiee": 1, "usr": 50, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "NUEVE DE JULIO", "it": "CONCEPCION", "n": "PRIMARIA", "iiee": 1, "usr": 94, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "ORCOTUNA", "it": "SAN JOSE DE QUERO", "n": "INICIAL", "iiee": 6, "usr": 305, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "ORCOTUNA", "it": "SAN JOSE DE QUERO", "n": "PRIMARIA", "iiee": 5, "usr": 501, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "SAN JOSE DE QUERO", "it": "SAN JOSE DE QUERO", "n": "INICIAL", "iiee": 14, "usr": 172, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "SAN JOSE DE QUERO", "it": "SAN JOSE DE QUERO", "n": "PRIMARIA", "iiee": 12, "usr": 447, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "SAN JOSE DE QUERO", "it": "SAN JOSE DE QUERO", "n": "SECUNDARIA", "iiee": 2, "usr": 151, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "SANTA ROSA DE OCOPA", "it": "CONCEPCION", "n": "INICIAL", "iiee": 2, "usr": 84, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "SANTA ROSA DE OCOPA", "it": "CONCEPCION", "n": "PRIMARIA", "iiee": 3, "usr": 169, "conf": 0, "acta": 0, "int": 0}, {"p": "CONCEPCION", "d": "SANTA ROSA DE OCOPA", "it": "CONCEPCION", "n": "SECUNDARIA", "iiee": 1, "usr": 153, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CARHUACALLANGA", "it": "HUANCAN", "n": "INICIAL", "iiee": 1, "usr": 5, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CARHUACALLANGA", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 1, "usr": 5, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHACAPAMPA", "it": "HUANCAN", "n": "INICIAL", "iiee": 3, "usr": 20, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHACAPAMPA", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 7, "usr": 42, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHICCHE", "it": "HUANCAN", "n": "INICIAL", "iiee": 4, "usr": 34, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHICCHE", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 6, "usr": 43, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHILCA", "it": "CHILCA", "n": "INICIAL", "iiee": 15, "usr": 1284, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHILCA", "it": "CHILCA", "n": "PRIMARIA", "iiee": 8, "usr": 3431, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHILCA", "it": "HUANCAN", "n": "INICIAL", "iiee": 8, "usr": 315, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHILCA", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 2, "usr": 804, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHILCA", "it": "HUANCAN", "n": "SECUNDARIA", "iiee": 1, "usr": 226, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHONGOS ALTO", "it": "HUANCAN", "n": "INICIAL", "iiee": 5, "usr": 32, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHONGOS ALTO", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 5, "usr": 71, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHONGOS ALTO", "it": "HUANCAN", "n": "SECUNDARIA", "iiee": 1, "usr": 90, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHUPURO", "it": "HUANCAN", "n": "INICIAL", "iiee": 6, "usr": 112, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHUPURO", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 4, "usr": 173, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CHUPURO", "it": "HUANCAN", "n": "SECUNDARIA", "iiee": 1, "usr": 110, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "COLCA", "it": "HUANCAN", "n": "INICIAL", "iiee": 6, "usr": 36, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "COLCA", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 7, "usr": 88, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CULLHUAS", "it": "HUANCAN", "n": "INICIAL", "iiee": 6, "usr": 49, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "CULLHUAS", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 13, "usr": 147, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "EL TAMBO", "it": "EL TAMBO", "n": "INICIAL", "iiee": 47, "usr": 2902, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "EL TAMBO", "it": "EL TAMBO", "n": "PRIMARIA", "iiee": 29, "usr": 7056, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "EL TAMBO", "it": "EL TAMBO", "n": "SECUNDARIA", "iiee": 2, "usr": 454, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "EL TAMBO", "it": "SICAYA", "n": "PRIMARIA", "iiee": 1, "usr": 295, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUACRAPUQUIO", "it": "HUANCAN", "n": "INICIAL", "iiee": 3, "usr": 77, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUACRAPUQUIO", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 2, "usr": 104, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUALHUAS", "it": "SICAYA", "n": "INICIAL", "iiee": 5, "usr": 185, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUALHUAS", "it": "SICAYA", "n": "PRIMARIA", "iiee": 2, "usr": 406, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUALHUAS", "it": "SICAYA", "n": "SECUNDARIA", "iiee": 1, "usr": 301, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUANCAN", "it": "HUANCAN", "n": "INICIAL", "iiee": 14, "usr": 1043, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUANCAN", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 5, "usr": 1417, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUANCAN", "it": "HUANCAN", "n": "SECUNDARIA", "iiee": 2, "usr": 789, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUANCAYO", "it": "CHILCA", "n": "INICIAL", "iiee": 1, "usr": 426, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUANCAYO", "it": "CHILCA", "n": "PRIMARIA", "iiee": 1, "usr": 1005, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUANCAYO", "it": "HUANCAYO", "n": "INICIAL", "iiee": 25, "usr": 2116, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUANCAYO", "it": "HUANCAYO", "n": "PRIMARIA", "iiee": 21, "usr": 7171, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUANCAYO", "it": "HUANCAYO", "n": "SECUNDARIA", "iiee": 3, "usr": 769, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUASICANCHA", "it": "HUANCAN", "n": "INICIAL", "iiee": 3, "usr": 24, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUASICANCHA", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 3, "usr": 64, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUAYUCACHI", "it": "HUANCAN", "n": "INICIAL", "iiee": 12, "usr": 652, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "HUAYUCACHI", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 7, "usr": 1181, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "INGENIO", "it": "SICAYA", "n": "INICIAL", "iiee": 7, "usr": 70, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "INGENIO", "it": "SICAYA", "n": "PRIMARIA", "iiee": 6, "usr": 124, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "INGENIO", "it": "SICAYA", "n": "SECUNDARIA", "iiee": 1, "usr": 106, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PARIAHUANCA", "it": "SANTO DOMINGO DE ACOBAMBA", "n": "INICIAL", "iiee": 34, "usr": 252, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PARIAHUANCA", "it": "SANTO DOMINGO DE ACOBAMBA", "n": "PRIMARIA", "iiee": 32, "usr": 612, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PARIAHUANCA", "it": "SANTO DOMINGO DE ACOBAMBA", "n": "SECUNDARIA", "iiee": 1, "usr": 80, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PILCOMAYO", "it": "SICAYA", "n": "INICIAL", "iiee": 5, "usr": 513, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PILCOMAYO", "it": "SICAYA", "n": "PRIMARIA", "iiee": 5, "usr": 1258, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PILCOMAYO", "it": "SICAYA", "n": "SECUNDARIA", "iiee": 1, "usr": 353, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PUCARA", "it": "CHILCA", "n": "INICIAL", "iiee": 9, "usr": 187, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PUCARA", "it": "CHILCA", "n": "PRIMARIA", "iiee": 10, "usr": 323, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PUCARA", "it": "CHILCA", "n": "SECUNDARIA", "iiee": 1, "usr": 194, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PUCARA", "it": "HUANCAN", "n": "INICIAL", "iiee": 3, "usr": 27, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "PUCARA", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 2, "usr": 27, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "QUICHUAY", "it": "SICAYA", "n": "INICIAL", "iiee": 4, "usr": 62, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "QUICHUAY", "it": "SICAYA", "n": "PRIMARIA", "iiee": 4, "usr": 77, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "QUILCAS", "it": "SICAYA", "n": "INICIAL", "iiee": 6, "usr": 163, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "QUILCAS", "it": "SICAYA", "n": "PRIMARIA", "iiee": 5, "usr": 406, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "QUILCAS", "it": "SICAYA", "n": "SECUNDARIA", "iiee": 1, "usr": 279, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAN AGUSTIN", "it": "SICAYA", "n": "INICIAL", "iiee": 9, "usr": 478, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAN AGUSTIN", "it": "SICAYA", "n": "PRIMARIA", "iiee": 3, "usr": 803, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAN JERONIMO DE TUNAN", "it": "SICAYA", "n": "INICIAL", "iiee": 12, "usr": 485, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAN JERONIMO DE TUNAN", "it": "SICAYA", "n": "PRIMARIA", "iiee": 5, "usr": 1157, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAN JERONIMO DE TUNAN", "it": "SICAYA", "n": "SECUNDARIA", "iiee": 1, "usr": 291, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SANTO DOMINGO DE ACOBAMBA", "it": "SANTO DOMINGO DE ACOBAMBA", "n": "INICIAL", "iiee": 37, "usr": 256, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SANTO DOMINGO DE ACOBAMBA", "it": "SANTO DOMINGO DE ACOBAMBA", "n": "PRIMARIA", "iiee": 46, "usr": 642, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SANTO DOMINGO DE ACOBAMBA", "it": "SANTO DOMINGO DE ACOBAMBA", "n": "SECUNDARIA", "iiee": 2, "usr": 187, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAPALLANGA", "it": "CHILCA", "n": "INICIAL", "iiee": 20, "usr": 996, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAPALLANGA", "it": "CHILCA", "n": "PRIMARIA", "iiee": 14, "usr": 1895, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAPALLANGA", "it": "CHILCA", "n": "SECUNDARIA", "iiee": 1, "usr": 469, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAÑO", "it": "SICAYA", "n": "INICIAL", "iiee": 6, "usr": 180, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SAÑO", "it": "SICAYA", "n": "PRIMARIA", "iiee": 4, "usr": 330, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SICAYA", "it": "SICAYA", "n": "INICIAL", "iiee": 8, "usr": 511, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SICAYA", "it": "SICAYA", "n": "PRIMARIA", "iiee": 5, "usr": 1171, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "SICAYA", "it": "SICAYA", "n": "SECUNDARIA", "iiee": 1, "usr": 625, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "VIQUES", "it": "HUANCAN", "n": "INICIAL", "iiee": 2, "usr": 80, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "VIQUES", "it": "HUANCAN", "n": "PRIMARIA", "iiee": 1, "usr": 237, "conf": 0, "acta": 0, "int": 0}, {"p": "HUANCAYO", "d": "VIQUES", "it": "HUANCAN", "n": "SECUNDARIA", "iiee": 1, "usr": 261, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "ACOLLA", "it": "JAUJA 1", "n": "INICIAL", "iiee": 16, "usr": 194, "conf": 1, "acta": 1, "int": 5}, {"p": "JAUJA", "d": "ACOLLA", "it": "JAUJA 1", "n": "PRIMARIA", "iiee": 13, "usr": 357, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "ACOLLA", "it": "JAUJA 1", "n": "SECUNDARIA", "iiee": 2, "usr": 177, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "APATA", "it": "APATA", "n": "INICIAL", "iiee": 10, "usr": 218, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "APATA", "it": "APATA", "n": "PRIMARIA", "iiee": 8, "usr": 508, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "APATA", "it": "APATA", "n": "SECUNDARIA", "iiee": 1, "usr": 126, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "ATAURA", "it": "APATA", "n": "INICIAL", "iiee": 3, "usr": 32, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "ATAURA", "it": "APATA", "n": "PRIMARIA", "iiee": 2, "usr": 35, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "CANCHAYLLO", "it": "JAUJA 2", "n": "INICIAL", "iiee": 4, "usr": 67, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "CANCHAYLLO", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 4, "usr": 176, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "CURICACA", "it": "JAUJA 2", "n": "INICIAL", "iiee": 6, "usr": 61, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "CURICACA", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 4, "usr": 103, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "EL MANTARO", "it": "APATA", "n": "INICIAL", "iiee": 5, "usr": 120, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "EL MANTARO", "it": "APATA", "n": "PRIMARIA", "iiee": 3, "usr": 218, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "EL MANTARO", "it": "APATA", "n": "SECUNDARIA", "iiee": 1, "usr": 113, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "HUAMALI", "it": "APATA", "n": "INICIAL", "iiee": 2, "usr": 60, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "HUAMALI", "it": "APATA", "n": "PRIMARIA", "iiee": 4, "usr": 213, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "HUARIPAMPA", "it": "JAUJA 2", "n": "INICIAL", "iiee": 1, "usr": 37, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "HUARIPAMPA", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 1, "usr": 59, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "HUERTAS", "it": "APATA", "n": "INICIAL", "iiee": 3, "usr": 44, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "HUERTAS", "it": "APATA", "n": "PRIMARIA", "iiee": 4, "usr": 87, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JANJAILLO", "it": "JAUJA 2", "n": "INICIAL", "iiee": 3, "usr": 8, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JANJAILLO", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 2, "usr": 18, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JAUJA", "it": "JAUJA 1", "n": "INICIAL", "iiee": 9, "usr": 653, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JAUJA", "it": "JAUJA 1", "n": "PRIMARIA", "iiee": 6, "usr": 1462, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JAUJA", "it": "JAUJA 1", "n": "SECUNDARIA", "iiee": 3, "usr": 1615, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JAUJA", "it": "JAUJA 2", "n": "INICIAL", "iiee": 2, "usr": 303, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JAUJA", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 4, "usr": 1078, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JULCAN", "it": "APATA", "n": "INICIAL", "iiee": 1, "usr": 24, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JULCAN", "it": "APATA", "n": "PRIMARIA", "iiee": 2, "usr": 88, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "JULCAN", "it": "APATA", "n": "SECUNDARIA", "iiee": 1, "usr": 110, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "LEONOR ORDOÑEZ", "it": "JAUJA 2", "n": "INICIAL", "iiee": 3, "usr": 57, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "LEONOR ORDOÑEZ", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 3, "usr": 92, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "LLOCLLAPAMPA", "it": "JAUJA 2", "n": "INICIAL", "iiee": 3, "usr": 35, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "LLOCLLAPAMPA", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 4, "usr": 86, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MARCO", "it": "JAUJA 1", "n": "INICIAL", "iiee": 5, "usr": 38, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MARCO", "it": "JAUJA 1", "n": "PRIMARIA", "iiee": 5, "usr": 96, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MASMA", "it": "APATA", "n": "INICIAL", "iiee": 5, "usr": 75, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MASMA", "it": "APATA", "n": "PRIMARIA", "iiee": 7, "usr": 201, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MASMA CHICCHE", "it": "APATA", "n": "INICIAL", "iiee": 3, "usr": 31, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MASMA CHICCHE", "it": "APATA", "n": "PRIMARIA", "iiee": 2, "usr": 62, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MASMA CHICCHE", "it": "APATA", "n": "SECUNDARIA", "iiee": 1, "usr": 17, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MOLINOS", "it": "APATA", "n": "INICIAL", "iiee": 6, "usr": 63, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MOLINOS", "it": "APATA", "n": "PRIMARIA", "iiee": 4, "usr": 111, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MONOBAMBA", "it": "APATA", "n": "INICIAL", "iiee": 6, "usr": 82, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MONOBAMBA", "it": "APATA", "n": "PRIMARIA", "iiee": 7, "usr": 142, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MUQUI", "it": "JAUJA 2", "n": "INICIAL", "iiee": 1, "usr": 33, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MUQUI", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 1, "usr": 46, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MUQUIYAUYO", "it": "JAUJA 2", "n": "INICIAL", "iiee": 2, "usr": 88, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MUQUIYAUYO", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 2, "usr": 167, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "MUQUIYAUYO", "it": "JAUJA 2", "n": "SECUNDARIA", "iiee": 1, "usr": 167, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "PACA", "it": "JAUJA 1", "n": "INICIAL", "iiee": 4, "usr": 15, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "PACA", "it": "JAUJA 1", "n": "PRIMARIA", "iiee": 4, "usr": 44, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "PACCHA", "it": "JAUJA 2", "n": "INICIAL", "iiee": 5, "usr": 30, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "PACCHA", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 7, "usr": 114, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "PANCAN", "it": "APATA", "n": "INICIAL", "iiee": 4, "usr": 62, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "PANCAN", "it": "APATA", "n": "PRIMARIA", "iiee": 3, "usr": 410, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "PANCAN", "it": "JAUJA 1", "n": "INICIAL", "iiee": 2, "usr": 44, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "PARCO", "it": "JAUJA 2", "n": "INICIAL", "iiee": 2, "usr": 29, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "PARCO", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 4, "usr": 61, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "POMACANCHA", "it": "JAUJA 1", "n": "INICIAL", "iiee": 5, "usr": 44, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "POMACANCHA", "it": "JAUJA 1", "n": "PRIMARIA", "iiee": 6, "usr": 117, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "POMACANCHA", "it": "JAUJA 1", "n": "SECUNDARIA", "iiee": 1, "usr": 24, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "RICRAN", "it": "APATA", "n": "INICIAL", "iiee": 5, "usr": 36, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "RICRAN", "it": "APATA", "n": "PRIMARIA", "iiee": 6, "usr": 99, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "RICRAN", "it": "APATA", "n": "SECUNDARIA", "iiee": 1, "usr": 12, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SAN LORENZO", "it": "APATA", "n": "INICIAL", "iiee": 6, "usr": 115, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SAN LORENZO", "it": "APATA", "n": "PRIMARIA", "iiee": 2, "usr": 284, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SAN LORENZO", "it": "APATA", "n": "SECUNDARIA", "iiee": 1, "usr": 239, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SAN PEDRO DE CHUNAN", "it": "APATA", "n": "INICIAL", "iiee": 3, "usr": 20, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SAN PEDRO DE CHUNAN", "it": "APATA", "n": "PRIMARIA", "iiee": 2, "usr": 19, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SAUSA", "it": "JAUJA 2", "n": "INICIAL", "iiee": 2, "usr": 106, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SAUSA", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 1, "usr": 107, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SINCOS", "it": "JAUJA 2", "n": "INICIAL", "iiee": 11, "usr": 137, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SINCOS", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 10, "usr": 317, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "SINCOS", "it": "JAUJA 2", "n": "SECUNDARIA", "iiee": 1, "usr": 65, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "TUNAN MARCA", "it": "JAUJA 1", "n": "INICIAL", "iiee": 4, "usr": 38, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "TUNAN MARCA", "it": "JAUJA 1", "n": "PRIMARIA", "iiee": 3, "usr": 63, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "YAULI", "it": "APATA", "n": "INICIAL", "iiee": 3, "usr": 36, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "YAULI", "it": "APATA", "n": "PRIMARIA", "iiee": 4, "usr": 44, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "YAUYOS", "it": "JAUJA 2", "n": "INICIAL", "iiee": 7, "usr": 104, "conf": 0, "acta": 0, "int": 0}, {"p": "JAUJA", "d": "YAUYOS", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 3, "usr": 128, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "CARHUAMAYO", "it": "JUNIN", "n": "INICIAL", "iiee": 9, "usr": 324, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "CARHUAMAYO", "it": "JUNIN", "n": "PRIMARIA", "iiee": 9, "usr": 605, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "CARHUAMAYO", "it": "JUNIN", "n": "SECUNDARIA", "iiee": 2, "usr": 562, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "JUNIN", "it": "JUNIN", "n": "INICIAL", "iiee": 12, "usr": 415, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "JUNIN", "it": "JUNIN", "n": "PRIMARIA", "iiee": 12, "usr": 983, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "JUNIN", "it": "JUNIN", "n": "SECUNDARIA", "iiee": 3, "usr": 823, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "ONDORES", "it": "JUNIN", "n": "INICIAL", "iiee": 4, "usr": 29, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "ONDORES", "it": "JUNIN", "n": "PRIMARIA", "iiee": 9, "usr": 88, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "ULCUMAYO", "it": "JUNIN", "n": "INICIAL", "iiee": 32, "usr": 204, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "ULCUMAYO", "it": "JUNIN", "n": "PRIMARIA", "iiee": 42, "usr": 492, "conf": 0, "acta": 0, "int": 0}, {"p": "JUNIN", "d": "ULCUMAYO", "it": "JUNIN", "n": "SECUNDARIA", "iiee": 1, "usr": 91, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "COVIRIALI", "it": "MAZAMARI", "n": "INICIAL", "iiee": 14, "usr": 197, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "COVIRIALI", "it": "MAZAMARI", "n": "PRIMARIA", "iiee": 14, "usr": 371, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "LLAYLLA", "it": "MAZAMARI", "n": "INICIAL", "iiee": 16, "usr": 279, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "LLAYLLA", "it": "MAZAMARI", "n": "PRIMARIA", "iiee": 12, "usr": 499, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "LLAYLLA", "it": "MAZAMARI", "n": "SECUNDARIA", "iiee": 1, "usr": 108, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "MAZAMARI", "n": "INICIAL", "iiee": 52, "usr": 1015, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "MAZAMARI", "n": "PRIMARIA", "iiee": 53, "usr": 2441, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "MAZAMARI", "n": "SECUNDARIA", "iiee": 7, "usr": 1917, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "PANGOA", "n": "INICIAL", "iiee": 7, "usr": 79, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "PANGOA", "n": "PRIMARIA", "iiee": 7, "usr": 145, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "RIO NEGRO", "n": "INICIAL", "iiee": 2, "usr": 113, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "RIO NEGRO", "n": "SECUNDARIA", "iiee": 1, "usr": 39, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "RIO TAMBO", "n": "INICIAL", "iiee": 7, "usr": 240, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "RIO TAMBO", "n": "PRIMARIA", "iiee": 2, "usr": 144, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "MAZAMARI", "it": "RIO TAMBO", "n": "SECUNDARIA", "iiee": 2, "usr": 195, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PAMPA HERMOSA", "it": "MAZAMARI", "n": "INICIAL", "iiee": 17, "usr": 161, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PAMPA HERMOSA", "it": "MAZAMARI", "n": "PRIMARIA", "iiee": 19, "usr": 251, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PANGOA", "it": "MAZAMARI", "n": "INICIAL", "iiee": 15, "usr": 376, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PANGOA", "it": "MAZAMARI", "n": "PRIMARIA", "iiee": 13, "usr": 774, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PANGOA", "it": "MAZAMARI", "n": "SECUNDARIA", "iiee": 3, "usr": 326, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PANGOA", "it": "PANGOA", "n": "INICIAL", "iiee": 133, "usr": 3644, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PANGOA", "it": "PANGOA", "n": "PRIMARIA", "iiee": 137, "usr": 7754, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PANGOA", "it": "PANGOA", "n": "SECUNDARIA", "iiee": 33, "usr": 3026, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PANGOA", "it": "RIO TAMBO", "n": "INICIAL", "iiee": 2, "usr": 54, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PANGOA", "it": "RIO TAMBO", "n": "PRIMARIA", "iiee": 6, "usr": 294, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "PANGOA", "it": "RIO TAMBO", "n": "SECUNDARIA", "iiee": 1, "usr": 78, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO NEGRO", "it": "MAZAMARI", "n": "INICIAL", "iiee": 1, "usr": 11, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO NEGRO", "it": "RIO NEGRO", "n": "INICIAL", "iiee": 75, "usr": 1150, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO NEGRO", "it": "RIO NEGRO", "n": "PRIMARIA", "iiee": 82, "usr": 2577, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO NEGRO", "it": "RIO NEGRO", "n": "SECUNDARIA", "iiee": 13, "usr": 1373, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO NEGRO", "it": "RIO TAMBO", "n": "INICIAL", "iiee": 1, "usr": 6, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO NEGRO", "it": "RIO TAMBO", "n": "PRIMARIA", "iiee": 1, "usr": 20, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO NEGRO", "it": "RIO TAMBO", "n": "SECUNDARIA", "iiee": 1, "usr": 15, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO TAMBO", "it": "PANGOA", "n": "INICIAL", "iiee": 1, "usr": 6, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "n": "INICIAL", "iiee": 18, "usr": 285, "conf": 2, "acta": 2, "int": 8}, {"p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "n": "PRIMARIA", "iiee": 16, "usr": 557, "conf": 1, "acta": 1, "int": 5}, {"p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "n": "SECUNDARIA", "iiee": 2, "usr": 167, "conf": 1, "acta": 1, "int": 5}, {"p": "SATIPO", "d": "RIO TAMBO", "it": "RIO TAMBO", "n": "INICIAL", "iiee": 126, "usr": 3058, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO TAMBO", "it": "RIO TAMBO", "n": "PRIMARIA", "iiee": 122, "usr": 6170, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "RIO TAMBO", "it": "RIO TAMBO", "n": "SECUNDARIA", "iiee": 40, "usr": 3831, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "SATIPO", "it": "MAZAMARI", "n": "INICIAL", "iiee": 40, "usr": 1048, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "SATIPO", "it": "MAZAMARI", "n": "PRIMARIA", "iiee": 39, "usr": 2175, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "SATIPO", "it": "MAZAMARI", "n": "SECUNDARIA", "iiee": 5, "usr": 892, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "SATIPO", "it": "RIO NEGRO", "n": "INICIAL", "iiee": 17, "usr": 262, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "SATIPO", "it": "RIO NEGRO", "n": "PRIMARIA", "iiee": 33, "usr": 680, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "SATIPO", "it": "RIO NEGRO", "n": "SECUNDARIA", "iiee": 1, "usr": 31, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "VIZCATAN DEL ENE", "it": "PANGOA", "n": "INICIAL", "iiee": 19, "usr": 493, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "VIZCATAN DEL ENE", "it": "PANGOA", "n": "PRIMARIA", "iiee": 20, "usr": 802, "conf": 0, "acta": 0, "int": 0}, {"p": "SATIPO", "d": "VIZCATAN DEL ENE", "it": "PANGOA", "n": "SECUNDARIA", "iiee": 2, "usr": 87, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "ACOBAMBA", "it": "ACOBAMBA", "n": "INICIAL", "iiee": 20, "usr": 391, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "ACOBAMBA", "it": "ACOBAMBA", "n": "PRIMARIA", "iiee": 19, "usr": 749, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "ACOBAMBA", "it": "ACOBAMBA", "n": "SECUNDARIA", "iiee": 1, "usr": 333, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "HUARICOLCA", "it": "TARMA", "n": "INICIAL", "iiee": 4, "usr": 72, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "HUARICOLCA", "it": "TARMA", "n": "PRIMARIA", "iiee": 7, "usr": 174, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "HUASAHUASI", "it": "ACOBAMBA", "n": "INICIAL", "iiee": 1, "usr": 6, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "HUASAHUASI", "it": "HUASAHUASI", "n": "INICIAL", "iiee": 25, "usr": 446, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "HUASAHUASI", "it": "HUASAHUASI", "n": "PRIMARIA", "iiee": 30, "usr": 1100, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "HUASAHUASI", "it": "HUASAHUASI", "n": "SECUNDARIA", "iiee": 3, "usr": 594, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "LA UNION", "it": "ACOBAMBA", "n": "INICIAL", "iiee": 5, "usr": 88, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "LA UNION", "it": "ACOBAMBA", "n": "PRIMARIA", "iiee": 6, "usr": 216, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "LA UNION", "it": "TARMA", "n": "INICIAL", "iiee": 1, "usr": 2, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "PALCA", "it": "ACOBAMBA", "n": "INICIAL", "iiee": 1, "usr": 2, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "PALCA", "it": "HUASAHUASI", "n": "INICIAL", "iiee": 20, "usr": 308, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "PALCA", "it": "HUASAHUASI", "n": "PRIMARIA", "iiee": 24, "usr": 617, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "PALCA", "it": "HUASAHUASI", "n": "SECUNDARIA", "iiee": 1, "usr": 300, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "PALCAMAYO", "it": "ACOBAMBA", "n": "INICIAL", "iiee": 7, "usr": 126, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "PALCAMAYO", "it": "ACOBAMBA", "n": "PRIMARIA", "iiee": 12, "usr": 327, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "PALCAMAYO", "it": "ACOBAMBA", "n": "SECUNDARIA", "iiee": 1, "usr": 161, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "SAN PEDRO DE CAJAS", "it": "HUASAHUASI", "n": "INICIAL", "iiee": 8, "usr": 93, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "SAN PEDRO DE CAJAS", "it": "HUASAHUASI", "n": "PRIMARIA", "iiee": 12, "usr": 242, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "SAN PEDRO DE CAJAS", "it": "HUASAHUASI", "n": "SECUNDARIA", "iiee": 1, "usr": 151, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "SAN PEDRO DE CAJAS", "it": "TARMA", "n": "INICIAL", "iiee": 1, "usr": 1, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "TAPO", "it": "ACOBAMBA", "n": "INICIAL", "iiee": 9, "usr": 204, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "TAPO", "it": "ACOBAMBA", "n": "PRIMARIA", "iiee": 10, "usr": 422, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "TARMA", "it": "ACOBAMBA", "n": "INICIAL", "iiee": 6, "usr": 223, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "TARMA", "it": "ACOBAMBA", "n": "PRIMARIA", "iiee": 4, "usr": 574, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "TARMA", "it": "TARMA", "n": "INICIAL", "iiee": 40, "usr": 1192, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "TARMA", "it": "TARMA", "n": "PRIMARIA", "iiee": 33, "usr": 2464, "conf": 0, "acta": 0, "int": 0}, {"p": "TARMA", "d": "TARMA", "it": "TARMA", "n": "SECUNDARIA", "iiee": 1, "usr": 600, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "CHACAPALPA", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 1, "usr": 5, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "CHACAPALPA", "it": "LA OROYA", "n": "INICIAL", "iiee": 3, "usr": 23, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "CHACAPALPA", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 3, "usr": 58, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "HUAY-HUAY", "it": "LA OROYA", "n": "INICIAL", "iiee": 3, "usr": 74, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "HUAY-HUAY", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 2, "usr": 144, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "LA OROYA", "it": "LA OROYA", "n": "INICIAL", "iiee": 9, "usr": 195, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "LA OROYA", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 9, "usr": 1340, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "MARCAPOMACOCHA", "it": "LA OROYA", "n": "INICIAL", "iiee": 3, "usr": 25, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "MARCAPOMACOCHA", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 5, "usr": 77, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "MOROCOCHA", "it": "LA OROYA", "n": "INICIAL", "iiee": 4, "usr": 97, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "MOROCOCHA", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 4, "usr": 252, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "MOROCOCHA", "it": "LA OROYA", "n": "SECUNDARIA", "iiee": 1, "usr": 191, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "PACCHA", "it": "LA OROYA", "n": "INICIAL", "iiee": 2, "usr": 40, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "PACCHA", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 3, "usr": 90, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "SANTA BARBARA DE CARHUACAYAN", "it": "LA OROYA", "n": "INICIAL", "iiee": 1, "usr": 32, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "SANTA BARBARA DE CARHUACAYAN", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 3, "usr": 79, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "SANTA ROSA DE SACCO", "it": "LA OROYA", "n": "INICIAL", "iiee": 7, "usr": 197, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "SANTA ROSA DE SACCO", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 5, "usr": 262, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "SANTA ROSA DE SACCO", "it": "LA OROYA", "n": "SECUNDARIA", "iiee": 1, "usr": 88, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "SUITUCANCHA", "it": "JAUJA 2", "n": "PRIMARIA", "iiee": 1, "usr": 2, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "SUITUCANCHA", "it": "LA OROYA", "n": "INICIAL", "iiee": 1, "usr": 31, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "SUITUCANCHA", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 1, "usr": 91, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "YAULI", "it": "LA OROYA", "n": "INICIAL", "iiee": 5, "usr": 78, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "YAULI", "it": "LA OROYA", "n": "PRIMARIA", "iiee": 5, "usr": 249, "conf": 0, "acta": 0, "int": 0}, {"p": "YAULI", "d": "YAULI", "it": "LA OROYA", "n": "SECUNDARIA", "iiee": 1, "usr": 147, "conf": 0, "acta": 0, "int": 0}];
+const CAES39 = [{"cm": "511337", "p": "JAUJA", "d": "ACOLLA", "it": "JAUJA 1", "cp": "TERCER CUARTEL", "col": "169 CAMINITO DEL SABER", "n": "INICIAL", "usr": 27, "int": 5, "acta": "SI", "mon": "MUCHA WONG, TONY RICHARD", "facta": "9/10/2026"}, {"cm": "551564", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "UNION PUCUSANI", "col": "31387", "n": "PRIMARIA", "usr": 7, "int": 3, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1690155", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "ALTO HUACAMAYO", "col": "30874", "n": "INICIAL", "usr": 16, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1679141", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SAN MIGUEL PUCHARINI", "col": "1409", "n": "INICIAL", "usr": 10, "int": 2, "acta": "NO", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "14/10/2026"}, {"cm": "1679158", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "cp": "YAPAZ ALTO", "col": "30876", "n": "INICIAL", "usr": 19, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1530054", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "cp": "PALOMAR", "col": "PALOMAR", "n": "SECUNDARIA", "usr": 88, "int": 5, "acta": "SI", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "facta": "25/09/2026"}, {"cm": "794701", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SANTA ROSA", "col": "RICARDO PALMA SORIANO", "n": "PRIMARIA", "usr": 611, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "16/09/2026"}, {"cm": "794719", "p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "cp": "BUENOS AIRES DE UNGARONI", "col": "30961", "n": "PRIMARIA", "usr": 16, "int": 1, "acta": "NO", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "369280", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "cp": "YAPAZ ALTO", "col": "30876", "n": "PRIMARIA", "usr": 27, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "936385", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "UNION PROGRESO", "col": "30001-21", "n": "PRIMARIA", "usr": 6, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "936575", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "MIRICHARO", "col": "290", "n": "INICIAL", "usr": 49, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "936633", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SANTA ROSA", "col": "655", "n": "INICIAL", "usr": 62, "int": 3, "acta": "NO", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "5/10/2026"}, {"cm": "937110", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "ALTO HUACAMAYO", "col": "30874", "n": "PRIMARIA", "usr": 7, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1742485", "p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "cp": "BUENOS AIRES DE UNGARONI", "col": "30961", "n": "INICIAL", "usr": 5, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1742436", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "LOS ANGELES DE RIO BLANCO", "col": "2144", "n": "INICIAL", "usr": 25, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "28/09/2026"}, {"cm": "1960540", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "AGUAS VERDES", "col": "ESTRELLITAS DEL SABER", "n": "INICIAL", "usr": 8, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "3862175", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "ALTO PUMPURIANI", "col": "SEMILLITAS DE SABER", "n": "INICIAL", "usr": 10, "int": 3, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1771633", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SAN JUAN DE MIRAFLORES", "col": "30001-188", "n": "INICIAL", "usr": 25, "int": 3, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1100346", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SAN PEDRO RIO AMARILLO", "col": "ANTONIO RAYMONDI", "n": "PRIMARIA", "usr": 12, "int": 3, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "23/09/2026"}, {"cm": "1102565", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "-", "col": "31234", "n": "PRIMARIA", "usr": 6, "int": 2, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1387620", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "cp": "NAPATI", "col": "NAPATI", "n": "INICIAL", "usr": 30, "int": 3, "acta": "SI", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "facta": "23/09/2026"}, {"cm": "1388792", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SAN JUAN DE MIRAFLORES", "col": "30001-188", "n": "PRIMARIA", "usr": 11, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1412055", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SATELITE", "col": "SAGRADA FAMILIA", "n": "PRIMARIA", "usr": 79, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "6/09/2026"}, {"cm": "1434091", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SANTA ROSA", "col": "RICARDO PALMA SORIANO", "n": "INICIAL", "usr": 91, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "16/09/2026"}, {"cm": "1434414", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SAN MIGUEL PUCHARINI", "col": "31066", "n": "PRIMARIA", "usr": 12, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1459593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "NUEVO HORIZONTE", "col": "30001-218", "n": "PRIMARIA", "usr": 7, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "3995634", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "VALLE DE LOS ANDES", "col": "GOTITAS DEL VALLE", "n": "INICIAL", "usr": 17, "int": 4, "acta": "NO", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "3998720", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SAN PEDRO RIO AMARILLO", "col": "CHISPITAS DE ALGODON", "n": "INICIAL", "usr": 8, "int": 3, "acta": "NO", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "14/10/2026"}, {"cm": "1215391", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "LOS OLIVOS", "col": "30477", "n": "PRIMARIA", "usr": 4, "int": 3, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "369199", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "PUMPURIANI", "col": "30867", "n": "PRIMARIA", "usr": 7, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1547058", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SANTA ROSA RIO AMARILLO", "col": "JOSE MARIATEGUI LA CHIRA", "n": "INICIAL", "usr": 33, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "16/10/2026"}, {"cm": "558759", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "LOS ANGELES DE RIO BLANCO", "col": "30207", "n": "PRIMARIA", "usr": 9, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "23/09/2026"}, {"cm": "599043", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SHIVITARI", "col": "30060", "n": "PRIMARIA", "usr": 6, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "1578111", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "cp": "POMPORITO", "col": "30001-88", "n": "PRIMARIA", "usr": 21, "int": 5, "acta": "SI", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "facta": "12/10/2026"}, {"cm": "668053", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "NACIENTE RIO AMARILLO", "col": "31696", "n": "PRIMARIA", "usr": 5, "int": 3, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "364877", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "UNION VISTA ALEGRE", "col": "31193", "n": "PRIMARIA", "usr": 9, "int": 5, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "5/10/2026"}, {"cm": "1641588", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "cp": "POMPORITO", "col": "1736", "n": "INICIAL", "usr": 10, "int": 5, "acta": "SI", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "facta": "23/09/2026"}, {"cm": "365577", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "PACHACUTEC", "col": "31263", "n": "PRIMARIA", "usr": 13, "int": 1, "acta": "NO", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "25/09/2026"}, {"cm": "365593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "cp": "SANTA ROSA RIO AMARILLO", "col": "JOSE MARIATEGUI LA CHIRA", "n": "PRIMARIA", "usr": 58, "int": 4, "acta": "SI", "mon": "PEÑA AGUI, DENISS ABEL", "facta": "16/10/2026"}];
+const INT152 = [{"nro": 1, "cm": "1690155", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30874", "n": "INICIAL", "doc": "20057492", "nom": "MENDOZA RUTTY, HUGO ANTONIO", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 52, "leng": "ESPAÑOL", "cel": "964833863", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 2, "cm": "1690155", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30874", "n": "INICIAL", "doc": "40546965", "nom": "MEZA SALVATIERRA, JANETH JESICA", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 46, "leng": "ESPAÑOL", "cel": "962933754", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 3, "cm": "1690155", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30874", "n": "INICIAL", "doc": "72267327", "nom": "SANCHEZ ROMERO, DEYSI HELEN", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 28, "leng": "ESPAÑOL", "cel": "955699542", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 4, "cm": "1690155", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30874", "n": "INICIAL", "doc": "44636132", "nom": "CASANTO CRUZ, MARIBEL OFELIA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 40, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 5, "cm": "1679141", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "1409", "n": "INICIAL", "doc": "60592983", "nom": "BOLIVIANO MENDOZA, EBELIN IBET", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 27, "leng": "ASHANINKA", "cel": "972405613", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 6, "cm": "1679141", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "1409", "n": "INICIAL", "doc": "45351271", "nom": "PAUCAR PAREDES, MARITZA YULIANI", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 38, "leng": "ASHANINKA", "cel": "901045118", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 7, "cm": "1679158", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "INICIAL", "doc": "20685447", "nom": "GUERRERO SOLIS, ELOINO DARIO", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 61, "leng": "ESPAÑOL", "cel": "944987887", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 8, "cm": "1679158", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "INICIAL", "doc": "41672225", "nom": "UCHUPE PEREZ, SONIA ANTONIA", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 48, "leng": "ESPAÑOL", "cel": "962231645", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 9, "cm": "1679158", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "INICIAL", "doc": "77153916", "nom": "CHAMORRO FLORES, SANDRA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 30, "leng": "ESPAÑOL", "cel": "925285178", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 10, "cm": "1679158", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "INICIAL", "doc": "47858748", "nom": "CHAMORRO FLORES, YOVANA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 33, "leng": "ESPAÑOL", "cel": "901115073", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 11, "cm": "1679158", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "INICIAL", "doc": "71969020", "nom": "ROJAS ROSALES, DESSENIA ROSALI", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 27, "leng": "ESPAÑOL", "cel": "928917605", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 12, "cm": "1530054", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "PALOMAR", "n": "SECUNDARIA", "doc": "43012446", "nom": "TOVAR ROMERO, JOSE FELICIANO", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "MASCULINO", "edad": 41, "leng": "ESPAÑOL", "cel": "988899167", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 13, "cm": "1530054", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "PALOMAR", "n": "SECUNDARIA", "doc": "20113912", "nom": "VERA ACEVEDO, ALEJANDRO OSWALDO", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "MASCULINO", "edad": 49, "leng": "ESPAÑOL", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 14, "cm": "1530054", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "PALOMAR", "n": "SECUNDARIA", "doc": "44098009", "nom": "BERNARDO ROMAN, EULOGIO", "rol": "VOCAL #1", "car": "PPFF APAFA", "sex": "MASCULINO", "edad": 44, "leng": "ASHANINKA", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 15, "cm": "1530054", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "PALOMAR", "n": "SECUNDARIA", "doc": "44099370", "nom": "SHINTSICAMA AURELIO, FREY ENCISO", "rol": "VOCAL #2", "car": "PPFF CONEI", "sex": "MASCULINO", "edad": 43, "leng": "ASHANINKA", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 16, "cm": "1530054", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "PALOMAR", "n": "SECUNDARIA", "doc": "73752437", "nom": "AURELIO SHANTIORI, CARLA", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 31, "leng": "ASHANINKA", "cel": "900000000", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 17, "cm": "1742485", "p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "col": "30961", "n": "INICIAL", "doc": "20719547", "nom": "DAVILA VILLAGARAY, YESICA JULIA", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "FEMENINO", "edad": 56, "leng": "ESPAÑOL", "cel": "931528856", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 18, "cm": "1742485", "p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "col": "30961", "n": "INICIAL", "doc": "20724392", "nom": "CARDENAS GOZAR, DELIA CLOTILDE", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 50, "leng": "ESPAÑOL", "cel": "954004400", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 19, "cm": "1742485", "p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "col": "30961", "n": "INICIAL", "doc": "41626614", "nom": "CAÑARI VEGA, SARA HILDA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 46, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 20, "cm": "1742485", "p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "col": "30961", "n": "INICIAL", "doc": "76451319", "nom": "MENDIVIL ALHUAY, JANETH", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 31, "leng": "ESPAÑOL", "cel": "957115393", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 21, "cm": "1742436", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "2144", "n": "INICIAL", "doc": "21118546", "nom": "OROPEZA JORGE, ELIZABETH MARLENE", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 57, "leng": "ESPAÑOL", "cel": "931786942", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 22, "cm": "1742436", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "2144", "n": "INICIAL", "doc": "75626651", "nom": "QUICHA YUMPIRI, SILMIRA", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 27, "leng": "ESPAÑOL", "cel": "929924266", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 23, "cm": "1742436", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "2144", "n": "INICIAL", "doc": "46903150", "nom": "RIOS CASANCHO, VILMA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 35, "leng": "ESPAÑOL", "cel": "943102620", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 24, "cm": "1742436", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "2144", "n": "INICIAL", "doc": "62184368", "nom": "POLANCO ROJAS, VANEZA MANUELA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 21, "leng": "ESPAÑOL", "cel": "901967501", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 25, "cm": "1960540", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "ESTRELLITAS DEL SABER", "n": "INICIAL", "doc": "42678252", "nom": "GONZALES MAYTA, LUZ ANGELA", "rol": "PRESIDENTE DELEGADO", "car": "PROMOTOR/A DE PRONOEI", "sex": "FEMENINO", "edad": 42, "leng": "ESPAÑOL", "cel": "928188032", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 26, "cm": "1960540", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "ESTRELLITAS DEL SABER", "n": "INICIAL", "doc": "71633748", "nom": "PACHECO FLORES, SONIA ISABEL", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 32, "leng": "ESPAÑOL", "cel": "925959144", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 27, "cm": "1960540", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "ESTRELLITAS DEL SABER", "n": "INICIAL", "doc": "60370551", "nom": "SANTOS ARGE, THALIA LEONELA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 24, "leng": "ESPAÑOL", "cel": "921541424", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 28, "cm": "1960540", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "ESTRELLITAS DEL SABER", "n": "INICIAL", "doc": "72609508", "nom": "SANTOS ARGE, FIORELA YADIRA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 22, "leng": "ESPAÑOL", "cel": "958144706", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 29, "cm": "1960540", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "ESTRELLITAS DEL SABER", "n": "INICIAL", "doc": "72611199", "nom": "RUBIANES RAMOS, RAYLI RRAYNI", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 21, "leng": "ESPAÑOL", "cel": "935105354", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 30, "cm": "3862175", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "SEMILLITAS DE SABER", "n": "INICIAL", "doc": "20740299", "nom": "COCHACHI ROJAS, FANY", "rol": "PRESIDENTE DELEGADO", "car": "PROMOTOR/A DE PRONOEI", "sex": "FEMENINO", "edad": 49, "leng": "ESPAÑOL", "cel": "988901937", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 31, "cm": "3862175", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "SEMILLITAS DE SABER", "n": "INICIAL", "doc": "46409731", "nom": "ROJAS HURTADO, LIDIA JANNETH", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 38, "leng": "ESPAÑOL", "cel": "907605307", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 32, "cm": "3862175", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "SEMILLITAS DE SABER", "n": "INICIAL", "doc": "72530498", "nom": "GARCIA ZEGARRA, LICETH", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 32, "leng": "ESPAÑOL", "cel": "975271812", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 33, "cm": "1771633", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-188", "n": "INICIAL", "doc": "20074252", "nom": "HUAIRE RAVILLA, RAIDA MIDID", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "FEMENINO", "edad": 50, "leng": "ESPAÑOL", "cel": "964977097", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 34, "cm": "1771633", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-188", "n": "INICIAL", "doc": "73765319", "nom": "ALIAGA SORIANO, VIANET NOEMI", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 23, "leng": "ESPAÑOL", "cel": "943311955", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 35, "cm": "1771633", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-188", "n": "INICIAL", "doc": "47770031", "nom": "LAZARO CHAVEZ, GRIMALDA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 36, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 36, "cm": "3995634", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "GOTITAS DEL VALLE", "n": "INICIAL", "doc": "47885749", "nom": "APAESTEGUI JULCA, LILIANA", "rol": "PRESIDENTE DELEGADO", "car": "PROMOTOR/A DE PRONOEI", "sex": "FEMENINO", "edad": 34, "leng": "ESPAÑOL", "cel": "937429263", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 37, "cm": "3995634", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "GOTITAS DEL VALLE", "n": "INICIAL", "doc": "76835630", "nom": "ARANGO BELTRAN, EVE SOFIA", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 24, "leng": "ESPAÑOL", "cel": "938676311", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 38, "cm": "3995634", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "GOTITAS DEL VALLE", "n": "INICIAL", "doc": "20567415", "nom": "ALBITES CRISTAN, ELMER", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "MASCULINO", "edad": 52, "leng": "ESPAÑOL", "cel": "940463610", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 39, "cm": "3995634", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "GOTITAS DEL VALLE", "n": "INICIAL", "doc": "43080983", "nom": "ATAYPOMA ALEJO, JUANA IRENIA", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 44, "leng": "ESPAÑOL", "cel": "940463610", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 40, "cm": "3998720", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "CHISPITAS DE ALGODON", "n": "INICIAL", "doc": "47395610", "nom": "DIAZ TEJEDA, NELLY RAQUEL", "rol": "PRESIDENTE DELEGADO", "car": "PROMOTOR/A DE PRONOEI", "sex": "FEMENINO", "edad": 35, "leng": "ESPAÑOL", "cel": "927850749", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 41, "cm": "3998720", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "CHISPITAS DE ALGODON", "n": "INICIAL", "doc": "44735575", "nom": "TORRES LAVADO, LIDA MAGALY", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 39, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 42, "cm": "3998720", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "CHISPITAS DE ALGODON", "n": "INICIAL", "doc": "43008410", "nom": "DIAZ APARCO, SONIA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 41, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 43, "cm": "1215391", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30477", "n": "PRIMARIA", "doc": "10256922", "nom": "POMA CCATAMAYO, WILFREDO JESUS", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "MASCULINO", "edad": 56, "leng": "ESPAÑOL", "cel": "922971586", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 44, "cm": "1215391", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30477", "n": "PRIMARIA", "doc": "46867085", "nom": "OSORIO ANTAY, IDIAL", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "MASCULINO", "edad": 34, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 45, "cm": "1215391", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30477", "n": "PRIMARIA", "doc": "75758764", "nom": "MISHARI SALVATIERRA, MARLIN", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 26, "leng": "ESPAÑOL", "cel": "921660419", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 46, "cm": "369199", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30867", "n": "PRIMARIA", "doc": "41618276", "nom": "ARANA ODICIO, HECTOR JOSE", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 45, "leng": "ESPAÑOL", "cel": "929891619", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 47, "cm": "369199", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30867", "n": "PRIMARIA", "doc": "46277509", "nom": "COCHACHI ROJAS, JESENIA RITA", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 36, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 48, "cm": "369199", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30867", "n": "PRIMARIA", "doc": "71723430", "nom": "VENTURA ROJAS, ROSALIA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 24, "leng": "QUECHUA", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 49, "cm": "369199", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30867", "n": "PRIMARIA", "doc": "20592955", "nom": "CURIPACO nan, VIRGINIA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 65, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 50, "cm": "511337", "p": "JAUJA", "d": "ACOLLA", "it": "JAUJA 1", "col": "169 CAMINITO DEL SABER", "n": "INICIAL", "doc": "41282167", "nom": "CASTRO BARZOLA, YANINA DILMA", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 44, "leng": "ESPAÑOL", "cel": "988491799", "mon": "MUCHA WONG, TONY RICHARD", "fmod": "16/10/2026"}, {"nro": 51, "cm": "511337", "p": "JAUJA", "d": "ACOLLA", "it": "JAUJA 1", "col": "169 CAMINITO DEL SABER", "n": "INICIAL", "doc": "44118699", "nom": "ESTRADA VILLANES, ERICA NICOLE", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 44, "leng": "ESPAÑOL", "cel": "975070346", "mon": "MUCHA WONG, TONY RICHARD", "fmod": "16/10/2026"}, {"nro": 52, "cm": "511337", "p": "JAUJA", "d": "ACOLLA", "it": "JAUJA 1", "col": "169 CAMINITO DEL SABER", "n": "INICIAL", "doc": "74769006", "nom": "YARINGAÑO CHAVEZ, MARIBEL KATY", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 25, "leng": "ESPAÑOL", "cel": "929658258", "mon": "MUCHA WONG, TONY RICHARD", "fmod": "16/10/2026"}, {"nro": 53, "cm": "511337", "p": "JAUJA", "d": "ACOLLA", "it": "JAUJA 1", "col": "169 CAMINITO DEL SABER", "n": "INICIAL", "doc": "73956435", "nom": "QUILCA ALVAREZ, YOANA LIBNY", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 23, "leng": "ESPAÑOL", "cel": "969593228", "mon": "MUCHA WONG, TONY RICHARD", "fmod": "16/10/2026"}, {"nro": 54, "cm": "511337", "p": "JAUJA", "d": "ACOLLA", "it": "JAUJA 1", "col": "169 CAMINITO DEL SABER", "n": "INICIAL", "doc": "48768049", "nom": "MALLMA SOTO, LORENA SANDRA", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 33, "leng": "ESPAÑOL", "cel": "985082080", "mon": "MUCHA WONG, TONY RICHARD", "fmod": "16/10/2026"}, {"nro": 55, "cm": "551564", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31387", "n": "PRIMARIA", "doc": "20103115", "nom": "OROSCO SALVADOR, GLADYS", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 49, "leng": "ESPAÑOL", "cel": "951769296", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 56, "cm": "551564", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31387", "n": "PRIMARIA", "doc": "44949987", "nom": "DIAZ RAMIREZ, SOFIA", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 45, "leng": "ESPAÑOL", "cel": "931454065", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 57, "cm": "551564", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31387", "n": "PRIMARIA", "doc": "76614054", "nom": "HUAMAN JIMENEZ, YOLIZA YULIANA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 24, "leng": "ESPAÑOL", "cel": "931066468", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 58, "cm": "558759", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30207", "n": "PRIMARIA", "doc": "42163300", "nom": "GOMEZ SARAVIA, MABEL LUCIA", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 43, "leng": "ESPAÑOL", "cel": "927677813", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 59, "cm": "558759", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30207", "n": "PRIMARIA", "doc": "61684617", "nom": "QUICHA MACHARI, ALICIA", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 34, "leng": "ESPAÑOL", "cel": "928796176", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 60, "cm": "558759", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30207", "n": "PRIMARIA", "doc": "78198872", "nom": "AMARO QUICHA, JHACKI", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 29, "leng": "ESPAÑOL", "cel": "905598160", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 61, "cm": "558759", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30207", "n": "PRIMARIA", "doc": "77025309", "nom": "AMARO QUICHA, MARSELIA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 26, "leng": "ESPAÑOL", "cel": "925874813", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 62, "cm": "599043", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30060", "n": "PRIMARIA", "doc": "20072226", "nom": "ACOSTA CORDERO, HENRY WILLIAM", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "MASCULINO", "edad": 50, "leng": "ESPAÑOL", "cel": "964693630", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 63, "cm": "599043", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30060", "n": "PRIMARIA", "doc": "41510245", "nom": "MENDOZA QUISPE, DANIEL", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "MASCULINO", "edad": 44, "leng": "ESPAÑOL", "cel": "917297503", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 64, "cm": "599043", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30060", "n": "PRIMARIA", "doc": "49010423", "nom": "NOCOLAS PUÑERO, ISABEL", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 38, "leng": "ESPAÑOL", "cel": "917042725", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 65, "cm": "599043", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30060", "n": "PRIMARIA", "doc": "20585362", "nom": "SOTO BREÑA, DOMINGA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 53, "leng": "ESPAÑOL", "cel": "929251827", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 66, "cm": "668053", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31696", "n": "PRIMARIA", "doc": "20068041", "nom": "LAZARTE AVELLANEDA, ISABEL", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 52, "leng": "ESPAÑOL", "cel": "956138732", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 67, "cm": "668053", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31696", "n": "PRIMARIA", "doc": "43974949", "nom": "CAHUANA TAIPE, WALTER", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "MASCULINO", "edad": 41, "leng": "ESPAÑOL", "cel": "968632425", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 68, "cm": "668053", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31696", "n": "PRIMARIA", "doc": "75797413", "nom": "NAVARRO ROJAS, ZENAIDA JAZMIN", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 27, "leng": "ESPAÑOL", "cel": "972917109", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 69, "cm": "794701", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "PRIMARIA", "doc": "20062084", "nom": "FERNANDEZ SANDOVAL, AMBROCIO", "rol": "PRESIDENTE DELEGADO", "car": "SUBDIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 58, "leng": "ESPAÑOL", "cel": "962507486", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 70, "cm": "794701", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "PRIMARIA", "doc": "40507053", "nom": "GAMARRA LOBATON, ROCIO MAGALY", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 46, "leng": "ESPAÑOL", "cel": "922823112", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 71, "cm": "794701", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "PRIMARIA", "doc": "48722147", "nom": "ROJAS SANCHEZ, YENITA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 31, "leng": "ESPAÑOL", "cel": "917733676", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 72, "cm": "794701", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "PRIMARIA", "doc": "48132449", "nom": "MUCHO VILLEGAS, GUADALUPE MARGOTH", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 32, "leng": "ESPAÑOL", "cel": "921314794", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 73, "cm": "794701", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "PRIMARIA", "doc": "44014140", "nom": "BALDEON SANTOS, JACQUELINE MAGDALENA", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 47, "leng": "ESPAÑOL", "cel": "948909616", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 74, "cm": "794719", "p": "CHANCHAMAYO", "d": "PICHANAQUI", "it": "PICHANAQUI", "col": "30961", "n": "PRIMARIA", "doc": "20719547", "nom": "DAVILA VILLAGARAY, YESICA JULIA", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "FEMENINO", "edad": 56, "leng": "ESPAÑOL", "cel": "931528856", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 75, "cm": "936385", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-21", "n": "PRIMARIA", "doc": "20057636", "nom": "HUAMAN QUISPILAYA, ODILIA KATTY", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 52, "leng": "ESPAÑOL", "cel": "954646011", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 76, "cm": "936385", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-21", "n": "PRIMARIA", "doc": "46436874", "nom": "MATUTE MANUELO, DELIA", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 37, "leng": "ESPAÑOL", "cel": "995589648", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 77, "cm": "936385", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-21", "n": "PRIMARIA", "doc": "20527087", "nom": "SEGGE LUJAN, JULIANA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 62, "leng": "ESPAÑOL", "cel": "979454816", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 78, "cm": "936385", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-21", "n": "PRIMARIA", "doc": "48659149", "nom": "MATUTE MANUELO, RUSBEL", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "MASCULINO", "edad": 31, "leng": "ESPAÑOL", "cel": "921619650", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 79, "cm": "936575", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "290", "n": "INICIAL", "doc": "20072177", "nom": "MARTINEZ REYES, GAURY SHAMELEE", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 50, "leng": "ESPAÑOL", "cel": "951877177", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 80, "cm": "936575", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "290", "n": "INICIAL", "doc": "70858805", "nom": "LASTARRIA LIVIAS, LESSLY PAMELA", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 32, "leng": "ESPAÑOL", "cel": "927828022", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 81, "cm": "936575", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "290", "n": "INICIAL", "doc": "47510681", "nom": "MERGE QUINTO, CARMEN MAYUMIX", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 34, "leng": "ESPAÑOL", "cel": "910987162", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 82, "cm": "936575", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "290", "n": "INICIAL", "doc": "48946046", "nom": "ARONE ALIAGA, DAISY", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 32, "leng": "ESPAÑOL", "cel": "921030495", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 83, "cm": "936575", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "290", "n": "INICIAL", "doc": "71718613", "nom": "GAMBOA CRISTOBAL, ANGELITA", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 34, "leng": "ESPAÑOL", "cel": "901790443", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 84, "cm": "936633", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "655", "n": "INICIAL", "doc": "43222521", "nom": "HUAMAN MONDALGO, ELIZABETH", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 41, "leng": "ESPAÑOL", "cel": "952245561", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 85, "cm": "936633", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "655", "n": "INICIAL", "doc": "42654436", "nom": "DIAZ VILLAR, ROCIO MIRTHA", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 42, "leng": "ESPAÑOL", "cel": "969447768", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 86, "cm": "936633", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "655", "n": "INICIAL", "doc": "44817753", "nom": "BALDEON CRESPO, ROSARIO VIRGINIA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 39, "leng": "ESPAÑOL", "cel": "930759776", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 87, "cm": "937110", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30874", "n": "PRIMARIA", "doc": "20057492", "nom": "MENDOZA RUTTY, HUGO ANTONIO", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 52, "leng": "ESPAÑOL", "cel": "964833863", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 88, "cm": "937110", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30874", "n": "PRIMARIA", "doc": "42501902", "nom": "APARCO MEZA, LUCIANO", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "MASCULINO", "edad": 44, "leng": "ESPAÑOL", "cel": "930409782", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 89, "cm": "937110", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30874", "n": "PRIMARIA", "doc": "63221744", "nom": "MARTINEZ CAMASCA, ELIZABETH", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 26, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 90, "cm": "937110", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30874", "n": "PRIMARIA", "doc": "42478215", "nom": "JULIAN QUILCA, FLORINDA CECILIA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 47, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 91, "cm": "1100346", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "ANTONIO RAYMONDI", "n": "PRIMARIA", "doc": "19985544", "nom": "YAURI DIONISIO, CARLOS BRAULIO", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "MASCULINO", "edad": 54, "leng": "ESPAÑOL", "cel": "939456498", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 92, "cm": "1100346", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "ANTONIO RAYMONDI", "n": "PRIMARIA", "doc": "23568008", "nom": "YOMPIRI MARIQUI, GUILLERMINA", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 54, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 93, "cm": "1100346", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "ANTONIO RAYMONDI", "n": "PRIMARIA", "doc": "40526564", "nom": "TELLO ALLCCA, MONICA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 46, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 94, "cm": "1102565", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31234", "n": "PRIMARIA", "doc": "60102509", "nom": "SULCA BOLIVIANO, LUZMILA", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 29, "leng": "ESPAÑOL", "cel": "935726188", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 95, "cm": "1102565", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31234", "n": "PRIMARIA", "doc": "61710880", "nom": "PALOMINO RIOS, AMALIA RUTH", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 25, "leng": "ESPAÑOL", "cel": "974341092", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 96, "cm": "1387620", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "NAPATI", "n": "INICIAL", "doc": "20072192", "nom": "AMBROSIO POMA, GERARDO CARLOS", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "MASCULINO", "edad": 55, "leng": "ESPAÑOL", "cel": "964411278", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 97, "cm": "1387620", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "NAPATI", "n": "INICIAL", "doc": "46007137", "nom": "ANCHAYA MEDINA DE HUARHUACHI, ETNI JEMIMA", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 37, "leng": "ESPAÑOL", "cel": "990573569", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 98, "cm": "1387620", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "NAPATI", "n": "INICIAL", "doc": "41733051", "nom": "RUIZ FARFAN, RICHAR", "rol": "VOCAL #1", "car": "PPFF APAFA", "sex": "MASCULINO", "edad": 43, "leng": "ESPAÑOL", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 99, "cm": "1388792", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-188", "n": "PRIMARIA", "doc": "20074252", "nom": "HUAIRE RAVILLA, RAIDA MIDID", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "FEMENINO", "edad": 50, "leng": "ESPAÑOL", "cel": "964977097", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 100, "cm": "1388792", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-188", "n": "PRIMARIA", "doc": "40789166", "nom": "ROJAS CHUQUIN, ALAN PAUL", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "MASCULINO", "edad": 46, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 101, "cm": "1388792", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-188", "n": "PRIMARIA", "doc": "48031049", "nom": "QUISPE PARIONA, JULIETH DAMARYS", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 33, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 102, "cm": "1388792", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-188", "n": "PRIMARIA", "doc": "41016031", "nom": "ACOSTA SURICHAQUI, JUVITA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 45, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 103, "cm": "1388792", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-188", "n": "PRIMARIA", "doc": "43825187", "nom": "CUSTODIO AGAPITO, RUTH MIRIAM", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 42, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 104, "cm": "1412055", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "SAGRADA FAMILIA", "n": "PRIMARIA", "doc": "25328624", "nom": "DIAZ QUISPE, HERNAN", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "MASCULINO", "edad": 51, "leng": "ESPAÑOL", "cel": "918823876", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 105, "cm": "1412055", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "SAGRADA FAMILIA", "n": "PRIMARIA", "doc": "40845520", "nom": "ORTIZ MATAMOROS, HEBER", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "MASCULINO", "edad": 46, "leng": "ESPAÑOL", "cel": "998906088", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 106, "cm": "1412055", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "SAGRADA FAMILIA", "n": "PRIMARIA", "doc": "46931193", "nom": "QUISPE NOLASCO, SINTIA LIBETTCIA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 36, "leng": "ESPAÑOL", "cel": "967473948", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 107, "cm": "1412055", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "SAGRADA FAMILIA", "n": "PRIMARIA", "doc": "40232370", "nom": "LARA MOLINA, CARMEN PATRICIA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 47, "leng": "ESPAÑOL", "cel": "951277829", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 108, "cm": "1412055", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "SAGRADA FAMILIA", "n": "PRIMARIA", "doc": "76434715", "nom": "NALVARTE FLORES, JAIKE NORA", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 29, "leng": "ESPAÑOL", "cel": "958682875", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "15/10/2026"}, {"nro": 109, "cm": "1434091", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "INICIAL", "doc": "20062084", "nom": "FERNANDEZ SANDOVAL, AMBROCIO", "rol": "PRESIDENTE DELEGADO", "car": "SUBDIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 58, "leng": "ESPAÑOL", "cel": "962507486", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 110, "cm": "1434091", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "INICIAL", "doc": "44112840", "nom": "ORE INGA, LISBET FLORA", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 40, "leng": "ESPAÑOL", "cel": "971138458", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 111, "cm": "1434091", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "INICIAL", "doc": "44805278", "nom": "GOZAR CONTRERAS, ISABEL CARINA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 39, "leng": "ESPAÑOL", "cel": "916638631", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 112, "cm": "1434091", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "INICIAL", "doc": "73510335", "nom": "GAVINO LAZARO, SOLEDAD TEODOLINDA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 28, "leng": "ESPAÑOL", "cel": "953489121", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 113, "cm": "1434091", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "RICARDO PALMA SORIANO", "n": "INICIAL", "doc": "60633247", "nom": "CHAVEZ REYES, EDITH NATALI", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 30, "leng": "ESPAÑOL", "cel": "957677472", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 114, "cm": "1434414", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31066", "n": "PRIMARIA", "doc": "20587533", "nom": "JACINTO SANTOS, GILDA LUZ", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 50, "leng": "ASHANINKA", "cel": "926278128", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 115, "cm": "1434414", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31066", "n": "PRIMARIA", "doc": "62162269", "nom": "VASQUEZ ROBLES, LEETZY CRISTINA", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 26, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 116, "cm": "1434414", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31066", "n": "PRIMARIA", "doc": "72609523", "nom": "JACINTO ALVAREZ, DORIS", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 35, "leng": "ASHANINKA", "cel": "966422793", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 117, "cm": "1434414", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31066", "n": "PRIMARIA", "doc": "75752564", "nom": "LOPEZ MARTIN, MARIA EMILIA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 24, "leng": "ESPAÑOL", "cel": "970429919", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 118, "cm": "1434414", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31066", "n": "PRIMARIA", "doc": "46508590", "nom": "ALVAREZ ICHABAUTIZ, SORAIDA", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 50, "leng": "ESPAÑOL", "cel": "-", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 119, "cm": "1459593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-218", "n": "PRIMARIA", "doc": "19863446", "nom": "OROZCO PAUCAR, ADOLFO", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 64, "leng": "ESPAÑOL", "cel": "958438690", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 120, "cm": "1459593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-218", "n": "PRIMARIA", "doc": "46550082", "nom": "PRADO TURUMANYA, ABEL JHONATHAN", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "MASCULINO", "edad": 36, "leng": "ESPAÑOL", "cel": "937429263", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 121, "cm": "1459593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-218", "n": "PRIMARIA", "doc": "23706296", "nom": "MEZA TAIPE, NARCISO MARCELINO", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "MASCULINO", "edad": 55, "leng": "ESPAÑOL", "cel": "929984635", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 122, "cm": "1459593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "30001-218", "n": "PRIMARIA", "doc": "48920640", "nom": "MENDOZA PANTOJA, CARMEN", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 41, "leng": "ESPAÑOL", "cel": "946267603", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 123, "cm": "1547058", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "JOSE MARIATEGUI LA CHIRA", "n": "INICIAL", "doc": "20068806", "nom": "RECUAY ASTO, CLIDER CARLOS", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 51, "leng": "ESPAÑOL", "cel": "942421003", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 124, "cm": "1547058", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "JOSE MARIATEGUI LA CHIRA", "n": "INICIAL", "doc": "19868850", "nom": "JARA CHOQUE, LIDIA ISABEL", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 57, "leng": "ESPAÑOL", "cel": "949990186", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 125, "cm": "1547058", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "JOSE MARIATEGUI LA CHIRA", "n": "INICIAL", "doc": "73991264", "nom": "CORDOVA NAVARRO, MAYLI YAQUI", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 27, "leng": "ESPAÑOL", "cel": "944405375", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 126, "cm": "1547058", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "JOSE MARIATEGUI LA CHIRA", "n": "INICIAL", "doc": "47956040", "nom": "SOLGADA PINO, REBECA MARILUZ", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 33, "leng": "ESPAÑOL", "cel": "918682978", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 127, "cm": "1547058", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "JOSE MARIATEGUI LA CHIRA", "n": "INICIAL", "doc": "75783079", "nom": "NAVARRO TRINIDAD, SAYURI", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 26, "leng": "ESPAÑOL", "cel": "921422854", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 128, "cm": "1578111", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "30001-88", "n": "PRIMARIA", "doc": "21015367", "nom": "LLANOS SIMON, RELAYSE", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "MASCULINO", "edad": 51, "leng": "ASHANINKA", "cel": "920208217", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 129, "cm": "1578111", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "30001-88", "n": "PRIMARIA", "doc": "42779284", "nom": "LOPEZ YUPANQUI, CIRO TEOFILO", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "MASCULINO", "edad": 43, "leng": "ASHANINKA", "cel": "900482141", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 130, "cm": "1578111", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "30001-88", "n": "PRIMARIA", "doc": "73761101", "nom": "PINTO SANTIAGO, NENIA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 26, "leng": "ASHANINKA", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 131, "cm": "1578111", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "30001-88", "n": "PRIMARIA", "doc": "21004061", "nom": "INCANITERI MORIS, MORALES", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "MASCULINO", "edad": 55, "leng": "ASHANINKA", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 132, "cm": "1578111", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "30001-88", "n": "PRIMARIA", "doc": "47953435", "nom": "ANGOSTO PINTO, BERNER", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "MASCULINO", "edad": 33, "leng": "ASHANINKA", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 133, "cm": "364877", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31193", "n": "PRIMARIA", "doc": "41145673", "nom": "ROJAS ROMERO, MELVA PATRICIA", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 45, "leng": "ESPAÑOL", "cel": "954912563", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 134, "cm": "364877", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31193", "n": "PRIMARIA", "doc": "74978680", "nom": "NAVARRO BULEJE, LUCY MAYLI", "rol": "SECRETARIO(A)", "car": "PADRE Y MADRE DE FAMILIA (SÓLO DE PRONOEI)", "sex": "FEMENINO", "edad": 27, "leng": "ESPAÑOL", "cel": "962646274", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 135, "cm": "364877", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31193", "n": "PRIMARIA", "doc": "76566084", "nom": "MERCADO CRISTOBAL, BEANE ELISAMA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 27, "leng": "ESPAÑOL", "cel": "918111048", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 136, "cm": "364877", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31193", "n": "PRIMARIA", "doc": "78634816", "nom": "MERCADO CRISTOBAL, KATIA MILCA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 25, "leng": "ESPAÑOL", "cel": "918608481", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 137, "cm": "364877", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31193", "n": "PRIMARIA", "doc": "76518704", "nom": "PARIONA MEDINA, JENNY JANET", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 31, "leng": "ESPAÑOL", "cel": "935952674", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 138, "cm": "1641588", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "1736", "n": "INICIAL", "doc": "21011008", "nom": "LOPEZ JONATA, RICARDINA", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "FEMENINO", "edad": 49, "leng": "ASHANINKA", "cel": "990568209", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 139, "cm": "1641588", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "1736", "n": "INICIAL", "doc": "61667753", "nom": "BERNARDO ROMAN, ELVERIO", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "MASCULINO", "edad": 35, "leng": "ASHANINKA", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 140, "cm": "1641588", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "1736", "n": "INICIAL", "doc": "73761101", "nom": "PINTO SANTIAGO, NENIA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 26, "leng": "ASHANINKA", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 141, "cm": "1641588", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "1736", "n": "INICIAL", "doc": "73752443", "nom": "ANGOSTO PINTO, AVELA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 29, "leng": "ASHANINKA", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 142, "cm": "1641588", "p": "SATIPO", "d": "RIO TAMBO", "it": "RIO NEGRO", "col": "1736", "n": "INICIAL", "doc": "44098014", "nom": "ANGOSTO CASTRO, MATILDE", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 45, "leng": "ASHANINKA", "cel": "-", "mon": "HUAMAN QUISPE, FRANCIS STEFANY", "fmod": "15/10/2026"}, {"nro": 143, "cm": "365577", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "31263", "n": "PRIMARIA", "doc": "20063234", "nom": "CUEVA FERNANDEZ, GIOVANI DAVID", "rol": "PRESIDENTE", "car": "DIRECTOR/A", "sex": "MASCULINO", "edad": 51, "leng": "ESPAÑOL", "cel": "982293676", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 144, "cm": "365593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "JOSE MARIATEGUI LA CHIRA", "n": "PRIMARIA", "doc": "20068806", "nom": "RECUAY ASTO, CLIDER CARLOS", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 51, "leng": "ESPAÑOL", "cel": "942421003", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 145, "cm": "365593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "JOSE MARIATEGUI LA CHIRA", "n": "PRIMARIA", "doc": "20046679", "nom": "MITMA DE LA CRUZ, ALEJANDRO", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "MASCULINO", "edad": 54, "leng": "ESPAÑOL", "cel": "996160683", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 146, "cm": "365593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "JOSE MARIATEGUI LA CHIRA", "n": "PRIMARIA", "doc": "76636387", "nom": "CARTOLIN HUAMANI, FLOR MARGARITA", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 31, "leng": "ESPAÑOL", "cel": "919046386", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 147, "cm": "365593", "p": "CHANCHAMAYO", "d": "PERENE", "it": "PERENE", "col": "JOSE MARIATEGUI LA CHIRA", "n": "PRIMARIA", "doc": "48661095", "nom": "MARCAS MELCHOR, AURIA", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 31, "leng": "ESPAÑOL", "cel": "961037218", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 148, "cm": "369280", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "PRIMARIA", "doc": "20685447", "nom": "GUERRERO SOLIS, ELOINO DARIO", "rol": "PRESIDENTE", "car": "DIRECTOR/A IIEE INTEGRADA", "sex": "MASCULINO", "edad": 61, "leng": "ESPAÑOL", "cel": "944987887", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 149, "cm": "369280", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "PRIMARIA", "doc": "40715486", "nom": "ESTEBAN ARELLANO, ZULMA SIXTA", "rol": "SECRETARIO(A)", "car": "DOCENTE", "sex": "FEMENINO", "edad": 46, "leng": "ESPAÑOL", "cel": "990459498", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 150, "cm": "369280", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "PRIMARIA", "doc": "46311396", "nom": "GUTIERREZ PIPA, REYNA ELIZABETH", "rol": "VOCAL #1", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 36, "leng": "ESPAÑOL", "cel": "935894738", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 151, "cm": "369280", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "PRIMARIA", "doc": "20094777", "nom": "HUAYTA CAHUANA, MARILUZ", "rol": "VOCAL #2", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 52, "leng": "ESPAÑOL", "cel": "918687860", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}, {"nro": 152, "cm": "369280", "p": "CHANCHAMAYO", "d": "SAN LUIS DE SHUARO", "it": "CHANCHAMAYO", "col": "30876", "n": "PRIMARIA", "doc": "45870765", "nom": "MEZA MONAGO, YANETH LORENZA", "rol": "VOCAL #3", "car": "PADRE Y MADRE DE FAMILIA", "sex": "FEMENINO", "edad": 37, "leng": "ESPAÑOL", "cel": "910361886", "mon": "PEÑA AGUI, DENISS ABEL", "fmod": "17/10/2026"}];
+
+const MONITOR_META = [
+  {
+    mon: "PEÑA AGUI, DENISS ABEL",
+    usr_sis: "utjunml02",
+    prov: "CHANCHAMAYO",
+    items: ["PERENE", "CHANCHAMAYO", "PICHANAQUI"],
+    distritos: ["PERENE", "SAN LUIS DE SHUARO", "PICHANAQUI"]
+  },
+  {
+    mon: "HUAMAN QUISPE, FRANCIS STEFANY",
+    usr_sis: "utjunml30",
+    prov: "SATIPO",
+    items: ["RIO NEGRO"],
+    distritos: ["RIO TAMBO"]
+  },
+  {
+    mon: "MUCHA WONG, TONY RICHARD",
+    usr_sis: "UTJUNML53",
+    prov: "JAUJA",
+    items: ["JAUJA 1"],
+    distritos: ["ACOLLA"]
+  }
+];
+
+function initFilters() {
+  const selM = document.getElementById('fMonitor');
+  selM.innerHTML = '<option value="TODOS">Todos los Monitores (Padrón General)</option>';
+  MONITOR_META.forEach(m => {
+    const cnt = CAES39.filter(c => c.mon === m.mon).length;
+    const o = document.createElement('option');
+    o.value = m.mon;
+    o.textContent = `${m.mon} (${cnt} CAEs)`;
+    selM.appendChild(o);
+  });
+  const provs = [...new Set(PADRON.map(d => d.p))].sort();
+  const selP = document.getElementById('fProv');
+  provs.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p; o.textContent = p;
+    selP.appendChild(o);
+  });
+  populateItems();
+}
+
+function populateItems() {
+  const prov = document.getElementById('fProv').value;
+  const selI = document.getElementById('fItem');
+  const currentVal = selI.value;
+  selI.innerHTML = '<option value="TODOS">Todos los Ítems</option>';
+  const items = [...new Set(PADRON.filter(d => prov === 'TODAS' || d.p === prov).map(d => d.it))].sort();
+  items.forEach(it => {
+    const o = document.createElement('option');
+    o.value = it; o.textContent = it;
+    selI.appendChild(o);
+  });
+  if (items.includes(currentVal)) selI.value = currentVal;
+}
+
+function onMonitorChange() {
+  // Cuando el usuario selecciona un monitor específico, podemos mantener Provincia en TODAS o ajustar automáticamente
+  renderAll();
+}
+
+function onProvChange() {
+  populateItems();
+  renderAll();
+}
+
+function resetFilters() {
+  document.getElementById('fMonitor').value = 'TODOS';
+  document.getElementById('fProv').value = 'TODAS';
+  populateItems();
+  document.getElementById('fItem').value = 'TODOS';
+  document.getElementById('fNivel').value = 'TODOS';
+  document.getElementById('fActa').value = 'TODOS';
+  document.getElementById('fSearch').value = '';
+  renderAll();
+}
+
+function switchTab(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById('tab'+i).style.display = (i === n) ? 'block' : 'none';
+    document.getElementById('btnTab'+i).classList.toggle('active', i === n);
+  });
+}
+
+function renderAll() {
+  const fMon = document.getElementById('fMonitor').value;
+  const fProv = document.getElementById('fProv').value;
+  const fItem = document.getElementById('fItem').value;
+  const fNivel = document.getElementById('fNivel').value;
+  const fActa = document.getElementById('fActa').value;
+  const fSearch = document.getElementById('fSearch').value.trim().toLowerCase();
+
+  // Si se elige un monitor, identificamos sus ítems asignados para calcular su meta de padrón
+  const monObj = MONITOR_META.find(m => m.mon === fMon);
+
+  // 1. Filtrar Padrón General
+  const padF = PADRON.filter(d =>
+    (fMon === 'TODOS' || (monObj && monObj.items.includes(d.it) && d.p === monObj.prov)) &&
+    (fProv === 'TODAS' || d.p === fProv) &&
+    (fItem === 'TODOS' || d.it === fItem) &&
+    (fNivel === 'TODOS' || d.n === fNivel) &&
+    (fSearch === '' || d.p.toLowerCase().includes(fSearch) || d.d.toLowerCase().includes(fSearch) || d.it.toLowerCase().includes(fSearch))
+  );
+
+  // 2. Filtrar 39 CAEs Conformados
+  const caesF = CAES39.filter(c =>
+    (fMon === 'TODOS' || c.mon === fMon) &&
+    (fProv === 'TODAS' || c.p === fProv) &&
+    (fItem === 'TODOS' || c.it === fItem) &&
+    (fNivel === 'TODOS' || c.n === fNivel) &&
+    (fActa === 'TODOS' || c.acta === fActa) &&
+    (fSearch === '' || c.cm.includes(fSearch) || c.col.toLowerCase().includes(fSearch) || c.d.toLowerCase().includes(fSearch) || c.mon.toLowerCase().includes(fSearch))
+  );
+
+  const validCMs = new Set(caesF.map(c => c.cm));
+
+  // 3. Filtrar 152 Integrantes
+  const intF = INT152.filter(x =>
+    validCMs.has(x.cm) &&
+    (fSearch === '' || x.cm.includes(fSearch) || x.col.toLowerCase().includes(fSearch) || x.nom.toLowerCase().includes(fSearch) || x.doc.includes(fSearch) || x.d.toLowerCase().includes(fSearch))
+  );
+
+  // Calcular KPIs
+  const totIIEE = padF.reduce((a,b) => a + b.iiee, 0);
+  const totUsr = padF.reduce((a,b) => a + b.usr, 0);
+  const totConf = caesF.length;
+  const totActaSI = caesF.filter(c => c.acta === 'SI').length;
+  const totActaNO = totConf - totActaSI;
+  const totInt = intF.length;
+  const c5 = caesF.filter(c => c.int === 5).length;
+
+  document.getElementById('kIIEE').textContent = totIIEE.toLocaleString();
+  document.getElementById('kIIEELbl').textContent = fMon === 'TODOS' ? 'Total II.EE. Padrón' : 'II.EE. en Ítems del Monitor';
+  document.getElementById('kIIEESub').textContent = `${(totIIEE/3846*100).toFixed(1)}% del padrón UT Junín`;
+  document.getElementById('kUsr').textContent = totUsr.toLocaleString();
+  document.getElementById('kUsrSub').textContent = `Prom: ${totIIEE ? (totUsr/totIIEE).toFixed(1) : 0} usuarios / II.EE.`;
+  document.getElementById('kConf').textContent = totConf.toLocaleString();
+  document.getElementById('kConfSub').textContent = `Avance: ${totIIEE ? (totConf/totIIEE*100).toFixed(2) : 0}% sobre meta (${totIIEE} II.EE.)`;
+  document.getElementById('kActa').textContent = totActaSI.toLocaleString();
+  document.getElementById('kActaSub').textContent = `${totConf ? (totActaSI/totConf*100).toFixed(1) : 0}% de los CAEs conformados`;
+  document.getElementById('kSinActa').textContent = totActaNO.toLocaleString();
+  document.getElementById('kSinActaSub').textContent = totActaNO > 0 ? 'Requiere subsanar acta' : '0 alertas pendientes';
+  document.getElementById('kInt').textContent = totInt.toLocaleString();
+  document.getElementById('kIntSub').textContent = `${c5} CAEs completos (5 int.)`;
+
+  // Gráfico 1: Avance por Monitor Responsable
+  const monRows = MONITOR_META.filter(m => fMon === 'TODOS' || m.mon === fMon).map(m => {
+    const mCaes = caesF.filter(c => c.mon === m.mon);
+    const mInt = intF.filter(x => x.mon === m.mon);
+    const mIIEE = PADRON.filter(d => d.p === m.prov && m.items.includes(d.it) && (fNivel==='TODOS'||d.n===fNivel)).reduce((a,b)=>a+b.iiee,0);
+    const mSI = mCaes.filter(c => c.acta === 'SI').length;
+    const mNO = mCaes.filter(c => c.acta === 'NO').length;
+    const mC5 = mCaes.filter(c => c.int === 5).length;
+    const mUsr = mCaes.reduce((a,b)=>a+b.usr,0);
+    return {
+      ...m,
+      caes: mCaes.length,
+      si: mSI,
+      no: mNO,
+      c5: mC5,
+      inc: mCaes.length - mC5,
+      int: mInt.length,
+      iiee_meta: mIIEE,
+      pct_meta: mIIEE ? (mCaes.length / mIIEE * 100) : 0,
+      usr_conf: mUsr
+    };
+  });
+
+  const maxMonCaes = Math.max(...monRows.map(m => m.caes), 1);
+  document.getElementById('chMonitor').innerHTML = monRows.map(m => `
+    <div class="bar-item">
+      <div class="bar-head">
+        <span><b>${m.mon}</b> (${m.prov})</span>
+        <span><b>${m.caes} CAEs</b> (${m.si} Acta SI / ${m.no} NO) | ${m.int} int.</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${(m.caes/maxMonCaes*100).toFixed(1)}%; background:#D97706;"></div>
+      </div>
+      <div style="font-size:11px; color:#64748B;">Avance sobre sus Ítems (${m.items.join(', ')}): <b>${m.caes} de ${m.iiee_meta} II.EE. (${m.pct_meta.toFixed(2)}%)</b></div>
+    </div>
+  `).join('');
+
+  // Gráfico 2: % Avance por Distrito / Ítem Intervenido
+  const distTargets = [
+    {label: "Perené (Ítem Perené)", mon: "PEÑA AGUI, DENISS ABEL", p: "CHANCHAMAYO", d: "PERENE", it: "PERENE", col: "#2563EB"},
+    {label: "Río Tambo (Ítem Río Negro)", mon: "HUAMAN QUISPE, FRANCIS STEFANY", p: "SATIPO", d: "RIO TAMBO", it: "RIO NEGRO", col: "#0D9488"},
+    {label: "S.L. de Shuaro (Ítem Chanchamayo)", mon: "PEÑA AGUI, DENISS ABEL", p: "CHANCHAMAYO", d: "SAN LUIS DE SHUARO", it: "CHANCHAMAYO", col: "#3B82F6"},
+    {label: "Acolla (Ítem Jauja 1)", mon: "MUCHA WONG, TONY RICHARD", p: "JAUJA", d: "ACOLLA", it: "JAUJA 1", col: "#7C3AED"},
+    {label: "Pichanaqui (Ítem Pichanaqui)", mon: "PEÑA AGUI, DENISS ABEL", p: "CHANCHAMAYO", d: "PICHANAQUI", it: "PICHANAQUI", col: "#F59E0B"}
+  ].filter(t => (fMon === 'TODOS' || t.mon === fMon) && (fProv === 'TODAS' || t.p === fProv) && (fItem === 'TODOS' || t.it === fItem));
+
+  document.getElementById('chDistMon').innerHTML = distTargets.map(t => {
+    const metaD = PADRON.filter(x => x.p === t.p && x.d === t.d && x.it === t.it && (fNivel==='TODOS'||x.n===fNivel)).reduce((a,b)=>a+b.iiee,0);
+    const avD = caesF.filter(c => c.p === t.p && c.d === t.d && c.it === t.it).length;
+    const pctD = metaD ? (avD / metaD * 100) : 0;
+    return `
+      <div class="bar-item">
+        <div class="bar-head"><span>${t.label}</span><span><b>${avD} / ${metaD} II.EE. (${pctD.toFixed(2)}%)</b></span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(pctD*6, 100).toFixed(1)}%; background:${t.col};"></div></div>
+      </div>
+    `;
+  }).join('') || '<p style="font-size:12px;color:#64748B;">Sin distritos intervenidos en este filtro</p>';
+
+  // Gráfico 3: Por Provincia
+  const provMap = {};
+  padF.forEach(d => {
+    if (!provMap[d.p]) provMap[d.p] = {iiee:0, usr:0};
+    provMap[d.p].iiee += d.iiee;
+    provMap[d.p].usr += d.usr;
+  });
+  const provArr = Object.entries(provMap).sort((a,b) => b[1].iiee - a[1].iiee);
+  const maxProv = provArr.length ? provArr[0][1].iiee : 1;
+  document.getElementById('chProv').innerHTML = provArr.map(([p, v]) => `
+    <div class="bar-item">
+      <div class="bar-head"><span>${p}</span><span>${v.iiee.toLocaleString()} II.EE. (${v.usr.toLocaleString()} usr)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v.iiee/maxProv*100).toFixed(1)}%; background:#2563EB;"></div></div>
+    </div>
+  `).join('') || '<p style="font-size:12px;color:#64748B;">Sin datos para este filtro</p>';
+
+  // Gráfico 4: Nivel Educativo
+  const nivOrder = ['INICIAL', 'PRIMARIA', 'SECUNDARIA'];
+  const nivColors = {'INICIAL':'#3B82F6', 'PRIMARIA':'#0D9488', 'SECUNDARIA':'#D97706'};
+  document.getElementById('chNivel').innerHTML = nivOrder.map(n => {
+    const sub = padF.filter(d => d.n === n);
+    const iieeN = sub.reduce((a,b)=>a+b.iiee,0);
+    const usrN = sub.reduce((a,b)=>a+b.usr,0);
+    const confN = caesF.filter(c => c.n === n).length;
+    const pct = totIIEE ? (iieeN/totIIEE*100) : 0;
+    return `
+      <div class="bar-item">
+        <div class="bar-head"><span>${n} (Avance: ${confN} CAEs)</span><span>${iieeN.toLocaleString()} II.EE. (${pct.toFixed(1)}%) | ${usrN.toLocaleString()} usr</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct.toFixed(1)}%; background:${nivColors[n]};"></div></div>
+      </div>
+    `;
+  }).join('');
+
+  // Gráfico 5: Estado de los CAEs Conformados
+  const cInc = totConf - c5;
+  document.getElementById('chAvance').innerHTML = `
+    <div class="bar-item">
+      <div class="bar-head"><span>Con Acta Suscrita (Acta = SI)</span><span>${totActaSI} de ${totConf} (${totConf ? (totActaSI/totConf*100).toFixed(1) : 0}%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${totConf ? (totActaSI/totConf*100).toFixed(1) : 0}%; background:#16A34A;"></div></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-head"><span>Sin Acta / Alerta (Acta = NO)</span><span>${totActaNO} de ${totConf} (${totConf ? (totActaNO/totConf*100).toFixed(1) : 0}%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${totConf ? (totActaNO/totConf*100).toFixed(1) : 0}%; background:#DC2626;"></div></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-head"><span>Comités Completos (5 Integrantes)</span><span>${c5} CAEs (${cInc} con 1 a 4 int.)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${totConf ? (c5/totConf*100).toFixed(1) : 0}%; background:#7C3AED;"></div></div>
+    </div>
+  `;
+
+  // Gráfico 6: Sexo y Rol de Integrantes
+  const fem = intF.filter(x => x.sex === 'FEMENINO').length;
+  const mas = intF.filter(x => x.sex === 'MASCULINO').length;
+  document.getElementById('chSexo').innerHTML = `
+    <div class="pill-stat" style="border-bottom: 3px solid #DB2777;">
+      <div class="p-val" style="color:#DB2777;">${fem} (${totInt ? (fem/totInt*100).toFixed(1) : 0}%)</div>
+      <div class="p-lbl">Mujeres en CAEs</div>
+    </div>
+    <div class="pill-stat" style="border-bottom: 3px solid #2563EB;">
+      <div class="p-val" style="color:#2563EB;">${mas} (${totInt ? (mas/totInt*100).toFixed(1) : 0}%)</div>
+      <div class="p-lbl">Hombres en CAEs</div>
+    </div>
+  `;
+
+  const roles = ['SECRETARIO(A)', 'VOCAL #1', 'PRESIDENTE', 'VOCAL #2', 'VOCAL #3', 'PRESIDENTE DELEGADO'];
+  document.getElementById('chRol').innerHTML = roles.map(r => {
+    const cnt = intF.filter(x => x.rol === r).length;
+    const pct = totInt ? (cnt/totInt*100) : 0;
+    return `
+      <div class="bar-item">
+        <div class="bar-head"><span>${r}</span><span>${cnt} (${pct.toFixed(1)}%)</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct.toFixed(1)}%; background:#0D9488;"></div></div>
+      </div>
+    `;
+  }).join('');
+
+  // Renderizar Tabla 1 (Avance por Monitor Responsable)
+  document.getElementById('cntT1').textContent = monRows.length;
+  document.getElementById('tbMon').innerHTML = monRows.map(m => `
+    <tr>
+      <td><b>${m.mon}</b></td>
+      <td><code>${m.usr_sis}</code></td>
+      <td><b>${m.prov}</b></td>
+      <td>${m.items.join(', ')}</td>
+      <td>${m.distritos.join(', ')}</td>
+      <td>${m.iiee_meta.toLocaleString()} II.EE.</td>
+      <td><span class="badge b-info" style="font-size:12.5px;">${m.caes} CAEs</span></td>
+      <td><b>${m.pct_meta.toFixed(2)}%</b></td>
+      <td><span class="badge b-si">${m.si} SI</span></td>
+      <td><span class="badge ${m.no>0?'b-no':'b-info'}">${m.no} NO</span></td>
+      <td><span class="badge b-si">${m.c5} completos</span></td>
+      <td><span class="badge b-warn">${m.inc} incompletos</span></td>
+      <td><b>${m.int} integrantes</b></td>
+      <td>${m.usr_conf.toLocaleString()} usuarios</td>
+    </tr>
+  `).join('');
+
+  // Renderizar Tabla 2 (CAEs Conformados sin Quintil ni Indígena)
+  document.getElementById('cntT2').textContent = caesF.length;
+  document.getElementById('tbCaes').innerHTML = caesF.map((c, idx) => `
+    <tr>
+      <td>${idx+1}</td>
+      <td><b>${c.cm}</b></td>
+      <td>${c.p}</td>
+      <td>${c.d}</td>
+      <td>${c.it}</td>
+      <td>${c.cp}</td>
+      <td><b>${c.col}</b></td>
+      <td><span class="badge b-info">${c.n}</span></td>
+      <td><b>${c.usr}</b></td>
+      <td><span class="badge ${c.int===5 ? 'b-si' : 'b-warn'}">${c.int} int.</span></td>
+      <td><span class="badge ${c.acta==='SI' ? 'b-si' : 'b-no'}">${c.acta==='SI' ? 'SI (Con Acta)' : 'NO (Alerta)'}</span></td>
+      <td>${c.facta}</td>
+      <td><b>${c.mon}</b></td>
+    </tr>
+  `).join('') || '<tr><td colspan="13" style="text-align:center;padding:20px;">No hay CAEs conformados con los filtros seleccionados</td></tr>';
+
+  // Renderizar Tabla 3 (Resumen Provincial sin Indígena)
+  document.getElementById('cntT3').textContent = provArr.length;
+  document.getElementById('tbProv').innerHTML = provArr.map(([p, v]) => {
+    const cP = caesF.filter(c => c.p === p);
+    const cf = cP.length;
+    const ac = cP.filter(c => c.acta === 'SI').length;
+    const sinAc = cf - ac;
+    const inTot = cP.reduce((a,b)=>a+b.int,0);
+    return `
+      <tr>
+        <td><b>${p}</b></td>
+        <td>${v.iiee.toLocaleString()}</td>
+        <td>${totIIEE ? (v.iiee/totIIEE*100).toFixed(2) : 0}%</td>
+        <td>${v.usr.toLocaleString()}</td>
+        <td>${(v.usr/v.iiee).toFixed(1)}</td>
+        <td><b>${cf}</b></td>
+        <td><span class="badge b-si">${ac}</span></td>
+        <td><span class="badge ${sinAc>0?'b-no':'b-info'}">${sinAc}</span></td>
+        <td><b>${inTot}</b></td>
+        <td><b>${(cf/v.iiee*100).toFixed(2)}%</b></td>
+      </tr>
+    `;
+  }).join('');
+
+  // Renderizar Tabla 4 (152 Integrantes)
+  document.getElementById('cntT4').textContent = intF.length;
+  document.getElementById('tbInt').innerHTML = intF.map((x, idx) => `
+    <tr>
+      <td>${idx+1}</td>
+      <td><b>${x.cm}</b></td>
+      <td>${x.p}</td>
+      <td>${x.d}</td>
+      <td>${x.col}</td>
+      <td>${x.n}</td>
+      <td>${x.doc}</td>
+      <td><b>${x.nom}</b></td>
+      <td><span class="badge b-info">${x.rol}</span></td>
+      <td>${x.car}</td>
+      <td>${x.sex}</td>
+      <td>${x.edad}</td>
+      <td>${x.leng}</td>
+      <td>${x.cel}</td>
+      <td><b>${x.mon}</b></td>
+    </tr>
+  `).join('') || '<tr><td colspan="15" style="text-align:center;padding:20px;">No hay integrantes para los filtros seleccionados</td></tr>';
+}
+
+initFilters();
+renderAll();
+</script>
+</body>
+</html>
